@@ -422,3 +422,17 @@ pre.creds {
   text-align: center;
   justify-content: center;
 }
+
+/* sidebar drill-down: group label + indented children */
+.ns-group {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #57606f;
+  padding: 10px 10px 4px;
+}
+.ns-item.ns-sub {
+  padding-left: 24px;
+  font-size: 13px;
+}
