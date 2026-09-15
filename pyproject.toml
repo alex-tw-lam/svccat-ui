@@ -1,0 +1,6 @@
+[project]
+name = "svccat-ui"
+version = "0.1.0"
+description = "svccat-ui: a service catalog UI on the PyHAT stack (Django + htmx + Alpine.js + DaisyUI)."
+requires-python = ">=3.12,<3.13"
+dependencies = ["Django==5.2.17", "django-template-partials==25.3", "gunicorn==23.0.0", "kubernetes==33.1.0", "requests==2.33.0"]

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+.playwright-mcp/
+.zcode/
+# Vendored third-party front-end assets are NOT committed; drop into core/public/ locally (core/public/README.md):
+core/public/*.min.js
+core/public/daisyui.css*
