@@ -1,0 +1,8 @@
+{% extends "core/layout.html" %}{% block content %}<div class="card login-card"><div class="card-body"><h1>Sign in</h1>{% if local_error %}<div role="alert" class="alert alert-error">{{ local_error }}</div>{% endif %}<a class="btn btn-primary btn-block" href="/auth/oidc">Sign in with Keycloak</a>{% if local_enabled %}<div class="divider">admin</div><form method="post" action="/auth/local" class="form"><label>Username <input name="username"
+        class="input input-bordered"
+        autocomplete="username"
+        required /></label><label>Password <input name="password"
+        type="password"
+        class="input input-bordered"
+        autocomplete="current-password"
+        required /></label><div class="form-actions"><button class="btn btn-outline" type="submit">Sign in as admin</button></div></form>{% endif %}</div></div>{% endblock %}

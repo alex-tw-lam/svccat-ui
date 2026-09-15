@@ -1,0 +1,13 @@
+<div class="adv-drawer"><div class="adv-head"><button type="button"
+        class="btn btn-ghost btn-sm"
+        @click="open = !open"
+        :aria-expanded="open">Advanced — free user inputs</button><span class="adv-state"><template x-if="error"><span class="text-error" x-text="error"></span></template> <template x-if="!error && text.trim()"><span class="muted">inputs match the schema</span></template></span></div> <div class="drawer-body" x-show="open" x-cloak><div class="drawer-label">Parameters (raw JSON) — free inputs: {% if hints %}{% for h in hints %}<code>{{ h }}</code> {% endfor %}{% else %}none{% endif %}</div> <label><textarea name="parameters"
+          x-ref="params"
+          x-model="text"
+          rows="6"
+          class="textarea textarea-bordered"
+          placeholder='{ "maxmemory_policy": "allkeys-lru" }'>{{ prefill }}</textarea></label> {% if precedence %}<p class="muted drawer-hint">Parameter precedence: computed inputs (broker) &gt; plan inputs (pick another plan) &gt; your JSON below. Locked for this service — computed: {{ precedence.computed }}; plan: {{ precedence.plan }}; platform-pinned: namespace, instance_name.</p>{% endif %} {% if schema_json and schema_json != "{}" %}<button type="button" class="btn btn-ghost btn-sm" @click="schemaOpen = true">Form schema (JSON)</button><div class="modal" :class="schemaOpen ? 'modal-open' : ''" x-cloak><div class="modal-box"><h3>Form schema (JSON)</h3><p class="muted">The same contract validates your JSON live in this drawer and again server-side — computed inputs are omitted, plan inputs are locked to the selected plan, unknown keys are rejected.</p><pre>{{ schema_json }}</pre><div class="modal-action"><a class="btn btn-sm"
+   href="/instances/new/schema?offeringId={{ offering_id }}&plan={{ plan_id|default:'' }}&tenant={{ tenant }}"
+   download>Download schema</a><button type="button"
+        class="btn btn-ghost btn-sm"
+        @click="schemaOpen = false">Close</button></div></div><label class="modal-backdrop" @click="schemaOpen = false"></label></div>{% endif %}</div> </div>
