@@ -6,7 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=8080 PATH="/app/.venv/bin:
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
-COPY manage.py service_manager core ./
+# COPY flattens directory sources (contents land in dest, the dir name is not
+# kept) — each package needs its own dest path or imports break at runtime
+COPY manage.py ./
+COPY service_manager ./service_manager
+COPY core ./core
 # Vendored assets (htmx.min.js, alpine.min.js, daisyui.css[.gz]) are not in the repo; bake them in at build time via a BuildKit bind (docker build --build-context assets=./assets .):
 # COPY --from=assets htmx.min.js alpine.min.js daisyui.css daisyui.css.gz core/public/
 EXPOSE 8080

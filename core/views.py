@@ -349,7 +349,14 @@ def base_url(request):
 
 
 KC_CLIENT_ID = os.environ.get("KC_CLIENT_ID", "service-manager")
-ISSUER = f"{os.environ.get('KC_URL', 'https://keycloak.example.com')}/realms/{os.environ.get('KC_REALM', 'platform')}/protocol/openid-connect"
+# KC_ISSUER (deployed convention): full realm URL, e.g.
+# https://keycloak.example.com/realms/platform. KC_URL/KC_REALM compose the
+# same URL for setups that configure the parts separately.
+ISSUER = os.environ.get("KC_ISSUER") or (
+    f"{os.environ.get('KC_URL', 'https://keycloak.example.com')}"
+    f"/realms/{os.environ.get('KC_REALM', 'platform')}"
+)
+ISSUER = f"{ISSUER.rstrip('/')}/protocol/openid-connect"
 AUTHORIZE_URL, TOKEN_URL, LOGOUT_URL = (
     f"{ISSUER}/auth",
     f"{ISSUER}/token",
