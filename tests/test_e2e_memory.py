@@ -150,4 +150,6 @@ class TestAssets(MemoryCase):
     def test_unknown_instance_renders_styled_404(self):
         resp = self.client.get("/instances/show/nope?tenant=team-a")
         self.assertEqual(resp.status_code, 404)
-        self.assertIn(b"card border-error", resp.content)
+        # card-bordered is load-bearing: .card has no border of its own, so
+        # border-error only renders with it
+        self.assertIn(b"card card-bordered border-error", resp.content)

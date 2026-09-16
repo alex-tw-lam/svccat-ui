@@ -6,13 +6,13 @@ permanent: the overlay supplies what the prebuilt cannot (utilities, the AA tint
 ## Archetypes — every screen is one of six
 
 1. **Sign-in** — one card: Keycloak button; admin u/p form only when the password env is set.
-2. **Catalog** — `.grid.tiles` marketplace; a tile goes straight to that offering's provision form.
+2. **Catalog** — `.grid` of DaisyUI `.card.card-bordered.card-compact` tiles; a tile goes straight to that offering's provision form.
 3. **Form** (provision/edit/bind) — 680px form card: service/plan selects, plan fields, name, advanced drawer (raw JSON, live validation).
 4. **Table** (instances/bindings) — title + action; `.table-wrap` zebra rows (name, badge, buttons); 3 s poll while in-flight.
 5. **Detail** (instance/binding) — spinner/badge title + actions, `dl.detail`, parameters `<pre>`, sub-table / credentials.
-6. **Error** — `card border-error`: 4xx/5xx status + message + Back.
+6. **Error** — `card card-bordered border-error`: 4xx/5xx status + message + Back.
 
-Chrome: dark topbar; light namespace sidebar (single menu item **Service Instances**); breadcrumbs drill to the instance
+Chrome: dark topbar; light sidebar (Service Catalog group: **Catalog** / **Instances**); DaisyUI `.breadcrumbs` drill into the instance
 list. Vocabulary: Kubernetes / Service Catalog / OSB, services only (no application-domain features) — cluster
 (`CLUSTER_NAME`, default `in-cluster`) → namespace (a `<select>`); events timeline on the instance detail page.
 

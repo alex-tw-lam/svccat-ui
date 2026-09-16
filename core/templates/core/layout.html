@@ -43,7 +43,7 @@
         </div>
         <div class="topbar-right">
           <span class="user">{{ session_name }}</span
-          ><a class="btn btn-outline btn-sm" href="/auth/logout">Sign out</a>
+          ><a class="btn btn-neutral btn-sm" href="/auth/logout">Sign out</a>
         </div>
       </header>
       <div class="frame">
@@ -76,16 +76,11 @@
             Deletion started — the row disappears when the broker finishes.
           </div>
           {% endif %}{% if crumbs %}
-          <nav class="crumbs" aria-label="Breadcrumb">
-            {% for c in crumbs %}
-              {% if c.href %}
-                <a href="{{ c.href }}">{{ c.label }}</a>
-              {% else %}
-                <span>{{ c.label }}</span>
-              {% endif %}
-              {% if not forloop.last %}<span class="crumb-sep">›</span>{% endif %}
-            {% endfor %}
-          </nav>
+          <div class="breadcrumbs" aria-label="Breadcrumb">
+            <ul>
+              {% for c in crumbs %}<li>{% if c.href %}<a href="{{ c.href }}">{{ c.label }}</a>{% else %}<span>{{ c.label }}</span>{% endif %}</li>{% endfor %}
+            </ul>
+          </div>
           {% endif %}{% endif %}{% block content %}{% endblock %}
         </main>
         {% if request.session.sub %}

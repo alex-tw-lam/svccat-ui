@@ -48,10 +48,8 @@ body {
 .topbar-right {
   margin-left: auto;
 }
-.topbar a.btn {
-  color: inherit;
-  border-color: currentColor;
-} /* DaisyUI outline btn is dark-on-light — force light strokes for the dark bar */
+/* Sign out uses .btn-neutral (dark fill, light text) — no override needed on
+   the dark bar */
 .ns-select-dark {
   background: #333940;
   color: #eef0f3;
@@ -109,25 +107,20 @@ body {
   font-weight: 600;
   box-shadow: inset 3px 0 0 #1d4ed8;
 }
-.crumbs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+/* DaisyUI .breadcrumbs draws the chevrons and hover underline; these three
+   lines keep the app's 13px size, gray trail and blue link color */
+.breadcrumbs {
   font-size: 13px;
   color: #57606f;
   margin: 2px 0 10px;
 }
-.crumbs a {
+.breadcrumbs a {
   color: #1d4ed8;
   text-decoration: none;
 }
 .brand:hover,
-.crumbs a:hover {
+.breadcrumbs a:hover {
   text-decoration: underline;
-}
-.crumb-sep {
-  opacity: 0.5;
 }
 .list-subnav {
   display: flex;
@@ -154,25 +147,22 @@ body {
   flex: 1;
   min-width: 340px;
 }
-.tile {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px;
-  background: #fff;
-  border: 1px solid #dfe3e8;
-  border-radius: 10px;
+/* catalog tiles ride DaisyUI's .card .card-bordered .card-compact chassis
+   (border, bg, flex column, 1rem padding, 8px gap); what stays ours: link
+   reset, hover glow, current-state border, the 16px title (card-title
+   defaults to 1.25rem), quiet description and the space-between footer */
+.grid a.card {
   text-decoration: none;
   color: inherit;
 }
-.tile:hover {
+.grid a.card:hover {
   border-color: #93c5fd;
   box-shadow: 0 1px 4px rgba(30, 58, 95, 0.08);
 }
-.tile.current {
+.grid a.card.current {
   border-color: #2563eb;
 }
-.tile-name {
+.card-title.tile-name {
   font-size: 16px;
   font-weight: 600;
 }
@@ -474,12 +464,11 @@ pre.creds {
   dl.detail {
     grid-template-columns: 110px 1fr;
   }
-  .detail-cols > .card {
-    min-width: 0;
-  }
   .login-card {
     margin: 24px auto;
   }
+  .cr-split { flex-direction: column; }
+  .cr-preview { max-width: none; position: static; width: 100%; margin-top: 6px; }
 }
 .htmx-request .btn {
   opacity: 0.6;
@@ -491,11 +480,10 @@ pre.creds {
   margin-top: 10px;
 }
 
-/* the demo (in-memory mock) banner: full-width, above everything */
+/* the demo (in-memory mock) banner: full-width, above everything; DaisyUI's
+   .alert already centers the text — only the radius undo is ours */
 .demo-banner {
   border-radius: 0;
-  text-align: center;
-  justify-content: center;
 }
 
 /* sidebar drill-down: group label + indented children */
@@ -545,8 +533,4 @@ pre.creds {
   min-height: 200px;
   white-space: pre-wrap;
   word-break: break-all;
-}
-@media (max-width: 720px) {
-  .cr-split { flex-direction: column; }
-  .cr-preview { max-width: none; position: static; width: 100%; margin-top: 6px; }
 }

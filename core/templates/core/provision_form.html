@@ -12,7 +12,7 @@
           {% if o.id == form.offering_id %} selected{% endif %}>{{ o.name }}</option>{% endfor %}</select>{% endif %}</label> <label>Plan <select name="planId"
            class="select select-bordered"
            hx-get="/instances/new/plan?tenant={{ tenant }}"
-           hx-include="closest form"
+           hx-include="[name='offeringId']"
            hx-target="#plan-fields"
            hx-swap="outerHTML">{% for p in form.offering.plans %}<option value="{{ p.id }}"{% if p.id == form.plan_id %} selected{% endif %}>{{ p.name }} — {{ p.description }}</option>{% endfor %}</select></label> {% include "core/plan_fields.html" with plan_id=form.plan_id plan_fields=form.plan_fields %}<label>Instance name <input name="name"
           class="input input-bordered"
@@ -20,7 +20,6 @@
           placeholder="my-redis (any language is fine)"
           required /></label>{% include "core/params_drawer.html" with hints=form.hints precedence=form.precedence prefill=form.values.parameters|default:"" offering_id=form.offering_id plan_id=form.plan_id tenant=tenant schema_json=form.schema_json %} <div class="form-actions"><button class="btn btn-primary"
           type="submit"
-          :disabled="busy || !submittable || !!error"
-          x-text="busy ? 'Submitting…' : 'Provision'">Provision</button></div></form>
+          :disabled="busy || !submittable || !!error"><span class="loading loading-spinner loading-xs" x-show="busy" x-cloak></span> <span x-text="busy ? 'Submitting…' : 'Provision'">Provision</span></button></div></form>
   {% include "core/cr_preview.html" with kind="ServiceInstance" %}
 </div>

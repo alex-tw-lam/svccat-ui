@@ -8,6 +8,5 @@
          hx-target="#plan-fields"
          hx-swap="outerHTML">{% for p in edit.plans %}<option value="{{ p.id }}"{% if p.id == edit.plan_id %} selected{% endif %}>{{ p.name }} — {{ p.description }}</option>{% endfor %}</select></label> {% include "core/plan_fields.html" with plan_id=edit.plan_id plan_fields=edit.plan_fields %}{% include "core/params_drawer.html" with hints=edit.hints precedence=edit.precedence prefill=edit.values.parameters|default:edit.params_json offering_id=edit.inst.offeringId plan_id=edit.plan_id tenant=edit.tenant schema_json=edit.schema_json %} <div class="form-actions"><button class="btn btn-primary"
        type="submit"
-       :disabled="busy || !!error"
-       x-text="busy ? 'Saving…' : 'Save'">Save</button><a class="btn btn-ghost"
+       :disabled="busy || !!error"><span class="loading loading-spinner loading-xs" x-show="busy" x-cloak></span> <span x-text="busy ? 'Saving…' : 'Save'">Save</span></button><a class="btn btn-ghost"
    href="/instances/show/{{ edit.inst.id }}?tenant={{ edit.tenant }}">Cancel</a></div></form>{% include "core/cr_preview.html" with kind="ServiceInstance" %}</div>{% endblock %}
