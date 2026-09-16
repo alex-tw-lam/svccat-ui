@@ -345,7 +345,9 @@ dl.detail dt {
 }
 dl.detail dd {
   margin: 0;
-  overflow-wrap: anywhere;
+  /* break-word (not anywhere): timestamps wrap at spaces, only truly
+     unbreakable tokens (long CR names) split */
+  overflow-wrap: break-word;
 }
 pre {
   background: #0f172a;
@@ -453,8 +455,21 @@ pre.creds {
   .btn-sm {
     min-height: 36px;
   }
-  .table-wrap table {
+  /* only the wide instances table (8 columns) needs the scroll-floor —
+     the 4-column bindings/events tables fit and wrap at phone width */
+  .table-wrap table.table-wide {
     min-width: 620px;
+  }
+  /* stack the detail cards — with the desktop min-width floor lifted they
+     would otherwise sit three-abreast at ~160px each */
+  .detail-cols {
+    flex-direction: column;
+  }
+  .detail-cols > .card {
+    min-width: 0;
+  }
+  .page-head {
+    align-items: flex-start;
   }
   dl.detail {
     grid-template-columns: 110px 1fr;
