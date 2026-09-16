@@ -348,7 +348,9 @@ def base_url(request):
     return os.environ.get("EXTERNAL_URL") or f"{request.scheme}://{request.get_host()}"
 
 
-KC_CLIENT_ID = os.environ.get("KC_CLIENT_ID", "service-manager")
+# the deployed env may carry a comma list of client ids (e.g. the e2e client);
+# an OIDC request carries exactly one — take the first
+KC_CLIENT_ID = os.environ.get("KC_CLIENT_ID", "service-manager").split(",")[0].strip()
 # KC_ISSUER (deployed convention): full realm URL, e.g.
 # https://keycloak.example.com/realms/platform. KC_URL/KC_REALM compose the
 # same URL for setups that configure the parts separately.
