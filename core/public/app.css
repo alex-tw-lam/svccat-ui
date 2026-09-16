@@ -436,3 +436,42 @@ pre.creds {
   padding-left: 24px;
   font-size: 13px;
 }
+
+/* Headlamp-style side-by-side: form left, live CR YAML preview right */
+.cr-split {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.cr-split .form {
+  flex: 1;
+  min-width: 0;
+}
+.cr-preview {
+  flex: 1;
+  min-width: 280px;
+  max-width: 480px;
+  position: sticky;
+  top: 16px;
+}
+.cr-preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 2px 6px;
+}
+.cr-preview-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.cr-preview-body {
+  font-size: 12px;
+  margin: 0;
+  min-height: 200px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+@media (max-width: 720px) {
+  .cr-split { flex-direction: column; }
+  .cr-preview { max-width: none; position: static; width: 100%; }
+}

@@ -1,0 +1,14 @@
+{% comment %}
+  Live CR preview: the resource YAML this form will submit, rendered
+  beside the form (Headlamp's form + YAML editor pattern, adapted to
+  Service Catalog shapes). Consumed by provision_form, edit_page, bind_page.
+  crYaml() lives on the smDrawer Alpine component — the including template
+  must place this inside the x-data tree.
+{% endcomment %}
+<div class="cr-preview">
+  <div class="cr-preview-head">
+    <span class="cr-preview-title">{{ kind }} preview</span>
+    <span class="muted">live — updates as you fill the form</span>
+  </div>
+  <pre class="cr-preview-body" x-text="crYaml()"></pre>
+</div>

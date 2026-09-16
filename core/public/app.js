@@ -91,10 +91,12 @@ document.addEventListener("alpine:init", () => {
     schemaOpen: false,
     submittable: opts.submittable !== false,
     text: "",
+    rev: 0,
     init() {
       const ta = this.$root.querySelector('textarea[name="parameters"]');
       if (ta) this.text = ta.value || "";
-    }, // seed from the server prefill (edit / failed-post re-render)
+      this.$root.addEventListener("input", () => this.rev++);
+    }, // seed text from the server prefill (edit / failed-post re-render); rev bumps re-render the CR preview on any field edit
     get contract() {
       try {
         return JSON.parse(this.$refs.contract.textContent);
@@ -105,6 +107,81 @@ document.addEventListener("alpine:init", () => {
     get error() {
       if (!this.text || !this.text.trim() || !this.contract) return null;
       return smValidateParams(this.text, this.contract);
+    },
+    // Live YAML preview of the CR this form will submit (Headlamp's
+    // form-beside-editor pattern). Shapes mirror core/kube.py exactly:
+    // instance parameters always carry the platform-pinned
+    // namespace/instance_name (pinned last), namespaced offerings reference
+    // UUIDs the server resolves, bindings carry instanceRef + secretName.
+    // Values unknowable client-side render as «placeholders».
+    crYaml() {
+      this.rev; // DOM .value reads are not Alpine-reactive; touching rev re-renders on every field edit
+      const f = this.$root;
+      const name =
+        f.querySelector('[name="name"]')?.value.trim() ||
+        f.dataset.crName ||
+        "«name»";
+      const ns =
+        f.closest("[data-tenant]")?.dataset.tenant || "«namespace»";
+      let params = null;
+      try {
+        const parsed = JSON.parse(this.text || "{}");
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          !Array.isArray(parsed) &&
+          Object.keys(parsed).length
+        )
+          params = parsed;
+      } catch {
+        params = "«invalid JSON»";
+      }
+      const line = (k, v) => (v ? `  ${k}: ${JSON.stringify(v)}\n` : "");
+      // parameters render as a nested YAML map (not one long JSON line):
+      // user inputs first, platform-pinned keys last — the merge order
+      // core/kube.py applies server-side. A string here means invalid JSON.
+      const paramsBlock = (obj) =>
+        typeof obj === "string"
+          ? `  parameters: ${JSON.stringify(obj)}\n`
+          : "  parameters:\n" +
+            Object.entries(obj)
+              .map(
+                ([k, v]) =>
+                  `    ${/^[$_A-Za-z][$_A-Za-z0-9]*$/.test(k) ? k : JSON.stringify(k)}: ${JSON.stringify(v)}\n`,
+              )
+              .join("");
+      const inst = f.querySelector('[name="instanceId"]');
+      if (inst)
+        return (
+          "apiVersion: servicecatalog.k8s.io/v1beta1\n" +
+          "kind: ServiceBinding\n" +
+          `metadata:\n  name: ${name}\n  namespace: ${ns}\n` +
+          "spec:\n" +
+          `  instanceRef:\n    name: ${inst.value}\n` +
+          (params ? paramsBlock(params) : "") +
+          line("secretName", `binding-${name}`)
+        );
+      const offering =
+        f.querySelector('[name="offeringId"]')?.value ||
+        f.dataset.offering ||
+        "";
+      const plan = f.querySelector('[name="planId"]')?.value || "";
+      const spec = f.dataset.namespaced
+        ? "  serviceClassName: «uuid»\n  servicePlanName: «uuid»\n"
+        : line("clusterServiceClassExternalName", offering) +
+          line("clusterServicePlanExternalName", plan);
+      return (
+        "apiVersion: servicecatalog.k8s.io/v1beta1\n" +
+        "kind: ServiceInstance\n" +
+        `metadata:\n  name: ${name}\n  namespace: ${ns}\n` +
+        "spec:\n" +
+        spec +
+        paramsBlock(
+          params === "«invalid JSON»"
+            ? params
+            : { ...(params || {}), namespace: ns, instance_name: name },
+        )
+      );
     },
   }));
   Alpine.data("smCopy", () => ({
