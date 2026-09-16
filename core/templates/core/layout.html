@@ -28,15 +28,14 @@
         >
         <div class="topbar-scope">
           <span class="cluster-chip" title="Cluster"
-            >{% if demo %}demo · in-memory{% else %}{{ cluster_name }}{% endif
-            %}</span
+            >{% if demo %}demo · in-memory{% else %}{{ cluster_name }}{% endif %}</span
           ><select
             class="ns-select-dark"
             data-tenant-switch
             aria-label="Namespace"
           >
             {% for t in tenants %}
-            <option value="{{ t }}" {% if t="" ="tenant" %} selected{% endif %}>
+            <option value="{{ t }}" {% if t == tenant %} selected{% endif %}>
               {{ t }}
             </option>
             {% endfor %}
@@ -78,11 +77,14 @@
           </div>
           {% endif %}{% if crumbs %}
           <nav class="crumbs" aria-label="Breadcrumb">
-            {% for c in crumbs %}{% if c.href %}<a href="{{ c.href }}"
-              >{{ c.label }}</a
-            >{% else %}<span>{{ c.label }}</span>{% endif %}{% if not
-            forloop.last %}<span class="crumb-sep">›</span>{% endif %}{% endfor
-            %}
+            {% for c in crumbs %}
+              {% if c.href %}
+                <a href="{{ c.href }}">{{ c.label }}</a>
+              {% else %}
+                <span>{{ c.label }}</span>
+              {% endif %}
+              {% if not forloop.last %}<span class="crumb-sep">›</span>{% endif %}
+            {% endfor %}
           </nav>
           {% endif %}{% endif %}{% block content %}{% endblock %}
         </main>
