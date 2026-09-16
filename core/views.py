@@ -1117,7 +1117,9 @@ def binding_credentials(request, binding_id):
         if isinstance(v, str)
     }
     return render(
-        request, "core/credentials.html", {"creds_json": json.dumps(creds, indent=2)}
+        request,
+        "core/credentials.html",
+        {"creds_json": json.dumps(creds, indent=2), "name": b["name"]},
     )
 
 

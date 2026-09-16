@@ -149,3 +149,16 @@ class TestOidc(MemoryCase):
         resp = self.client.get("/auth/logout")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp["Location"], "/auth/login")
+
+
+class TestCredentialsFragment(MemoryCase):
+    def test_revealed_credentials_can_be_hidden(self):
+        # the reveal panel must say which binding it belongs to and carry a
+        # Hide control that empties the container client-side
+        from django.template.loader import render_to_string
+
+        html = render_to_string(
+            "core/credentials.html", {"creds_json": "{}", "name": "app-binding"}
+        )
+        self.assertIn("Credentials — app-binding", html)
+        self.assertIn('data-dismiss="binding-creds"', html)

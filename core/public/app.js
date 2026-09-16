@@ -21,6 +21,14 @@ document.addEventListener(
   },
   true,
 );
+// Credential panel retraction: Reveal swaps credentials into a container
+// (id in data-dismiss); Hide empties that container so secrets leave the
+// screen with no server round-trip. Delegated, so it survives htmx swaps.
+document.addEventListener("click", (e) => {
+  const btn =
+    e.target instanceof Element ? e.target.closest("[data-dismiss]") : null;
+  if (btn) document.getElementById(btn.dataset.dismiss)?.replaceChildren();
+});
 // Namespace switcher (topbar scope dropdown): keeps the current path and every other query parameter, swaps only ?tenant=.
 document.addEventListener("change", ({ target }) => {
   const sel =

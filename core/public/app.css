@@ -356,6 +356,18 @@ pre.creds {
   gap: 10px;
   align-items: flex-start;
 }
+.creds-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+.creds-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #57606f;
+}
 .kv {
   display: inline-block;
   font-size: 12px;
