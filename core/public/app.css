@@ -262,6 +262,14 @@ form.inline {
   font-weight: 600;
   font-size: 14px;
 }
+/* a <select> sizes itself to its widest <option> — cap controls at the label
+   column or a long plan description ("small — 256Mi, single replica") forces
+   the whole form (and the page) wider than a phone screen */
+.form label > .input,
+.form label > .select,
+.form label > .textarea {
+  width: 100%;
+}
 .form-actions {
   display: flex;
   gap: 10px;
@@ -370,40 +378,92 @@ pre.creds {
   border-radius: 10px;
   border: 1px solid oklch(92% 0.01 260);
 }
-/* 720px breakpoint (binding §9): sidebar becomes a strip, wide tables scroll */
+/* 720px breakpoint (binding §9): phone layout — the topbar wraps into two
+   rows (brand + account, then cluster + namespace selector), the sidebar
+   becomes a tappable strip, wide tables scroll, and form controls sit at
+   16px so iOS Safari does not zoom the page on focus */
 @media (max-width: 720px) {
+  .topbar {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 8px 12px;
+  }
+  .topbar-scope {
+    order: 3;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  .topbar-scope .ns-select-dark {
+    flex: 1;
+    min-width: 0;
+    font-size: 16px;
+  }
+  .cluster-chip {
+    max-width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topbar .user {
+    max-width: 40vw;
+  }
   .frame {
     flex-direction: column;
   }
   .sidebar {
     width: auto;
     display: flex;
-    gap: 6px;
+    gap: 4px;
     overflow-x: auto;
     border-right: 0;
     border-bottom: 1px solid #dfe3e8;
-    padding: 8px 12px;
+    padding: 6px 10px;
   }
   .side-label {
     display: none;
   }
   .ns-list {
     flex-direction: row;
+    gap: 4px;
   }
   .ns-item {
     white-space: nowrap;
-  }
-  .topbar-right {
-    flex-wrap: wrap;
+    padding: 9px 12px;
   }
   main.container {
-    padding: 14px;
+    /* margin: 0 auto (desktop centering) makes a column-flex item
+       fit-content sized — it grows past the phone screen to the table's
+       max-content width; force full width instead, wide tables scroll in
+       their wrap */
+    margin: 0;
+    width: 100%;
+    padding: 14px 12px 28px;
+  }
+  h1 {
+    font-size: 19px;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  .btn {
+    min-height: 40px;
+  }
+  .btn-sm {
+    min-height: 36px;
   }
   .table-wrap table {
     min-width: 620px;
   }
   dl.detail {
     grid-template-columns: 110px 1fr;
+  }
+  .detail-cols > .card {
+    min-width: 0;
+  }
+  .login-card {
+    margin: 24px auto;
   }
 }
 .htmx-request .btn {
@@ -473,5 +533,5 @@ pre.creds {
 }
 @media (max-width: 720px) {
   .cr-split { flex-direction: column; }
-  .cr-preview { max-width: none; position: static; width: 100%; }
+  .cr-preview { max-width: none; position: static; width: 100%; margin-top: 6px; }
 }
