@@ -44,11 +44,13 @@ document.addEventListener("change", ({ target }) => {
 // Client-side validation mirror of core/input_schema.py: same layers (computed > plan > user, platform-pinned), same rejection reasons, same check order; the drawer's raw-JSON textarea is checked on every keystroke and fails closed — the server re-validates the identical contract.
 function smValidateParams(text, contract) {
   if (!text.trim()) return null; // absent parameters is valid
+  const bind = contract.op === "bind"; // three messages differ per side; the
+  // strings themselves mirror input_schema._validate byte-for-byte — do not unify
   let parsed;
   try {
     parsed = JSON.parse(text);
   } catch {
-    return `${contract.op === "bind" ? "Bind parameters" : "Parameters"} are not valid JSON — fix before submitting`;
+    return `${bind ? "Bind parameters" : "Parameters"} are not valid JSON — fix before submitting`;
   }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed))
     return "parameters must be a JSON object";
@@ -56,7 +58,7 @@ function smValidateParams(text, contract) {
   for (const key of Object.keys(parsed)) {
     const value = parsed[key];
     if ((contract.computed || []).indexOf(key) !== -1) {
-      if (contract.op === "bind")
+      if (bind)
         return `"${key}" is a computed bind input - projected from the instance`;
       return `"${key}" is a computed input - controlled by the broker`;
     }
@@ -70,7 +72,7 @@ function smValidateParams(text, contract) {
     const def = (contract.user || {})[key];
     if (!def) {
       const known = editable.join(", ") || "none";
-      if (contract.op === "bind")
+      if (bind)
         return `unknown bind parameter "${key}" - bind user inputs for this offering: ${known}`;
       return `unknown parameter "${key}" - user inputs for this offering: ${known}`;
     }
@@ -101,7 +103,7 @@ document.addEventListener("alpine:init", () => {
     text: "",
     rev: 0,
     init() {
-      const ta = this.$root.querySelector('textarea[name="parameters"]');
+      const ta = this.$refs.params;
       if (ta) this.text = ta.value || "";
       this.$root.addEventListener("input", () => this.rev++);
     }, // seed text from the server prefill (edit / failed-post re-render); rev bumps re-render the CR preview on any field edit
@@ -125,6 +127,7 @@ document.addEventListener("alpine:init", () => {
     crYaml() {
       this.rev; // DOM .value reads are not Alpine-reactive; touching rev re-renders on every field edit
       const f = this.$root;
+      const INVALID = "«invalid JSON»";
       const name =
         f.querySelector('[name="name"]')?.value.trim() ||
         f.dataset.crName ||
@@ -142,9 +145,12 @@ document.addEventListener("alpine:init", () => {
         )
           params = parsed;
       } catch {
-        params = "«invalid JSON»";
+        params = INVALID;
       }
       const line = (k, v) => (v ? `  ${k}: ${JSON.stringify(v)}\n` : "");
+      // YAML map key: bare when it is a plain identifier, JSON-quoted otherwise
+      const key = (k) =>
+        /^[$_A-Za-z][$_A-Za-z0-9]*$/.test(k) ? k : JSON.stringify(k);
       // parameters render as a nested YAML map (not one long JSON line):
       // user inputs first, platform-pinned keys last — the merge order
       // core/kube.py applies server-side. A string here means invalid JSON.
@@ -153,18 +159,17 @@ document.addEventListener("alpine:init", () => {
           ? `  parameters: ${JSON.stringify(obj)}\n`
           : "  parameters:\n" +
             Object.entries(obj)
-              .map(
-                ([k, v]) =>
-                  `    ${/^[$_A-Za-z][$_A-Za-z0-9]*$/.test(k) ? k : JSON.stringify(k)}: ${JSON.stringify(v)}\n`,
-              )
+              .map(([k, v]) => `    ${key(k)}: ${JSON.stringify(v)}\n`)
               .join("");
+      // both CRs share this preamble; only the kind and the spec body differ
+      const head = (kind) =>
+        "apiVersion: servicecatalog.k8s.io/v1beta1\n" +
+        `kind: ${kind}\n` +
+        `metadata:\n  name: ${name}\n  namespace: ${ns}\nspec:\n`;
       const inst = f.querySelector('[name="instanceId"]');
       if (inst)
         return (
-          "apiVersion: servicecatalog.k8s.io/v1beta1\n" +
-          "kind: ServiceBinding\n" +
-          `metadata:\n  name: ${name}\n  namespace: ${ns}\n` +
-          "spec:\n" +
+          head("ServiceBinding") +
           `  instanceRef:\n    name: ${inst.value}\n` +
           (params ? paramsBlock(params) : "") +
           line("secretName", `binding-${name}`)
@@ -179,13 +184,10 @@ document.addEventListener("alpine:init", () => {
         : line("clusterServiceClassExternalName", offering) +
           line("clusterServicePlanExternalName", plan);
       return (
-        "apiVersion: servicecatalog.k8s.io/v1beta1\n" +
-        "kind: ServiceInstance\n" +
-        `metadata:\n  name: ${name}\n  namespace: ${ns}\n` +
-        "spec:\n" +
+        head("ServiceInstance") +
         spec +
         paramsBlock(
-          params === "«invalid JSON»"
+          params === INVALID
             ? params
             : { ...(params || {}), namespace: ns, instance_name: name },
         )

@@ -197,6 +197,14 @@ def _cr_state(cr):
     )  # shared CR preamble for both record mappers: (condition, ready, reason, metadata, spec)
 
 
+def _display_name(metadata):
+    # the provision-time display-name annotation, falling back to the CR name
+    # (kube.py writes the same annotation literal on create)
+    return (metadata.get("annotations") or {}).get(
+        "service-manager.io/display-name"
+    ) or metadata.get("name")
+
+
 def instance_record(cr):
     condition, ready, reason, metadata, spec = _cr_state(cr)
     if metadata.get("deletionTimestamp"):
@@ -215,9 +223,6 @@ def instance_record(cr):
         status = "updating"
     else:
         status = "provisioning"
-    display_name = (metadata.get("annotations") or {}).get(
-        "service-manager.io/display-name"
-    )
     offering = (
         cr.get("_offeringExternalName")
         or spec.get("clusterServiceClassExternalName")
@@ -236,7 +241,7 @@ def instance_record(cr):
     )
     return {
         "id": metadata.get("name"),
-        "name": display_name or metadata.get("name"),
+        "name": _display_name(metadata),
         "resourceName": metadata.get("name"),
         "parameters": current_params or None,
         "offeringId": offering,
@@ -266,10 +271,7 @@ def binding_record(cr):
         status = "creating"
     return {
         "id": metadata.get("name"),
-        "name": (metadata.get("annotations") or {}).get(
-            "service-manager.io/display-name"
-        )
-        or metadata.get("name"),
+        "name": _display_name(metadata),
         "resourceName": metadata.get("name"),
         "instanceId": ((spec.get("instanceRef") or {}).get("name"))
         or ((spec.get("serviceInstanceRef") or {}).get("name"))
@@ -646,12 +648,11 @@ def _offering_ctx(cats, offering_id, plan_default=None, error="", values=None):
     }  # shared base of the provision and edit form contexts: the offering lookup, plan, contract fields
 
 
-def _provision_form_ctx(cats, offering_id, tenant, error="", values=None, locked=False):
+def _provision_form_ctx(cats, offering_id, error="", values=None, locked=False):
     return {
         "cats": cats,
         "offering_id": offering_id,
         "locked": locked,
-        "tenant": tenant,
         **_offering_ctx(cats, offering_id, values=values, error=error),
     }
 
@@ -659,7 +660,7 @@ def _provision_form_ctx(cats, offering_id, tenant, error="", values=None, locked
 def _provision_page(
     request, cats, offering_id, tenant, error="", values=None, locked=False, status=200
 ):
-    form = _provision_form_ctx(cats, offering_id, tenant, error, values, locked)
+    form = _provision_form_ctx(cats, offering_id, error, values, locked)
     name = (form["offering"] or {}).get("name") or "New service instance"
     return _page(
         request,
@@ -714,11 +715,11 @@ def provision_form_fragment(request):
         request,
         "core/provision_form.html",
         {
+            "tenant": request.tenant,  # page-level: params_drawer's download link needs it
             "form": _provision_form_ctx(
                 _offerings(request.tenant),
                 request.GET.get("offeringId") or "",
-                request.tenant,
-            )
+            ),
         },
     )
 
@@ -970,7 +971,7 @@ def instance_delete(request, inst_id):
     return redirect(f"/instances?tenant={tenant}&flash=deletion-started")
 
 
-def _bind_form_ctx(tenant, insts, preset, error="", values=None):
+def _bind_form_ctx(insts, preset, error="", values=None):
     values = values or {}
     selected_id = (
         values.get("instanceId") or preset or (insts[0]["id"] if insts else "")
@@ -1001,8 +1002,7 @@ def _bind_form_ctx(tenant, insts, preset, error="", values=None):
         "selected_id": selected_id,
         "error": error,
         "values": values,
-        "tenant": tenant,
-        "hint": hint,
+        "bind_hint": hint,
         "contract_json": _contract_json(
             selected["offeringId"] if selected else None, "bind"
         ),
@@ -1026,7 +1026,7 @@ def _bind_page(request, tenant, preset, error="", values=None, status=200):
         "Create binding",
         "core/bind_page.html",
         "form",
-        _bind_form_ctx(tenant, insts, preset, error, values),
+        _bind_form_ctx(insts, preset, error, values),
         crumbs,
         status,
     )
@@ -1045,7 +1045,6 @@ def bind_freeinputs(request):
         request,
         "core/bind_freeinputs.html",
         _bind_form_ctx(
-            request.tenant,
             _instances(request.tenant),
             request.GET.get("instanceId") or "",
         ),

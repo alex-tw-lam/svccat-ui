@@ -8,7 +8,7 @@
 {% endcomment %}<div class="adv-drawer"><div class="adv-head"><button type="button"
         class="btn btn-ghost btn-sm"
         @click="open = !open"
-        :aria-expanded="open">Advanced — free inputs</button><span class="adv-state"><template x-if="error"><span class="text-error" x-text="error"></span></template> <template x-if="!error && text.trim()"><span class="muted">inputs match the {% if bind %}bind {% endif %}schema</span></template></span></div> <div class="drawer-body" x-show="open" x-cloak><div class="drawer-label">{% if bind %}Bind parameters (raw JSON) — <span id="bind-free">{% include "core/bind_freeinputs.html" %}</span>{% else %}Parameters (raw JSON) — free inputs: {% if hints %}{% for h in hints %}<code>{{ h }}</code> {% endfor %}{% else %}none{% endif %}{% endif %}</div> <label><textarea name="parameters"
+        :aria-expanded="open">Advanced — free inputs</button><span class="adv-state"><template x-if="error"><span class="text-error" x-text="error"></span></template> <template x-if="!error && text.trim()"><span class="muted">inputs match the {% if bind %}bind {% endif %}schema</span></template></span></div> <div class="drawer-body" x-show="open" x-cloak><div class="drawer-label">{% if bind %}Bind parameters (raw JSON) — <span id="bind-free">{% include "core/bind_freeinputs.html" with bind_hint=bind_hint contract_json=contract_json %}</span>{% else %}Parameters (raw JSON) — free inputs: {% if hints %}{% for h in hints %}<code>{{ h }}</code> {% endfor %}{% else %}none{% endif %}{% endif %}</div> <label><textarea name="parameters"
           x-ref="params"
           x-model="text"
           {% if bind %}rows="4"{% else %}rows="6"{% endif %}

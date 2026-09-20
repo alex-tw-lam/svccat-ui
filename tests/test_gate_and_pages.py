@@ -162,3 +162,25 @@ class TestCredentialsFragment(MemoryCase):
         )
         self.assertIn("Credentials — app-binding", html)
         self.assertIn('data-dismiss="binding-creds"', html)
+
+
+class TestTemplateHygiene(MemoryCase):
+    def test_django_tags_never_span_lines(self):
+        # Django's tag regex cannot cross a newline — a {% if %} split across
+        # lines by a formatter renders as literal text (this once broke every
+        # page). Guardrail: every {% and {{ opener must close on its own line.
+        import re
+        from pathlib import Path
+
+        for f in Path("core/templates/core").glob("*.html"):
+            for n, line in enumerate(f.read_text().splitlines(), 1):
+                for m in re.finditer(r"{[{%#]", line):
+                    closer = "%}" if line[m.start()] == "{" and "%" in line[m.start():m.start()+2] else "}}"
+                    opener = line[m.start():m.start() + 2]
+                    closer = "%}" if opener == "{%" else "}}"
+                    rest = line[m.start() + 2:]
+                    self.assertIn(
+                        closer,
+                        rest,
+                        f"{f.name}:{n}: {opener} tag does not close on its own line",
+                    )

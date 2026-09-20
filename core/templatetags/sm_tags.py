@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-# shared by the badge_cls filter and the status_badge tag below
+# the tint mapping behind the status_badge tag
 _TINTS = {
     "ready": "ok",
     "failed": "err",
@@ -14,9 +14,6 @@ _TINTS = {
     "warning": "warn",
 }
 _INFLIGHT = ("provisioning", "updating", "deprovisioning")
-
-register.filter("badge_cls", lambda status: _TINTS.get(str(status).lower(), "info"))
-
 
 @register.simple_tag
 def status_badge(value, label="", spinner=""):

@@ -27,7 +27,7 @@ list. Vocabulary: Kubernetes / Service Catalog / OSB, services only (no applicat
 
 ## Inventory, states, a11y
 
-- `btn` (+primary/outline/error/ghost/sm), one primary per page-head · `alert warning/error/info` · `badge` + tint via `badge_cls`.
+- `btn` (+primary/outline/error/ghost/sm), one primary per page-head · `alert warning/error/info` · `badge` + tint via the `status_badge` tag.
 - `card card-body` (compact/stats) · `table table-zebra` in `.table-wrap` · `input/select/textarea input-bordered` (locked plan values disabled).
 - `.adv-drawer`/`.adv-head`/`.drawer-body` raw-JSON gate · DaisyUI `modal` + `schemaOpen` · `loading loading-spinner xs/sm`.
 - `dl.detail` (grid 160/1fr) · `.kv` + `<code>` chips (plan resources, free-input hints).

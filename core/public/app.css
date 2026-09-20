@@ -482,9 +482,6 @@ pre.creds {
   .cr-split { flex-direction: column; }
   .cr-preview { max-width: none; position: static; width: 100%; margin-top: 6px; }
 }
-.htmx-request .btn {
-  opacity: 0.6;
-}
 .loading.loading-xs {
   margin-right: 6px;
 }

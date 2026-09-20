@@ -11,4 +11,4 @@
         class="input input-bordered"
         value="{{ form.values.name|default:'' }}"
         placeholder="app-binding (any language is fine)"
-        required /></label> {% include "core/params_drawer.html" with bind=1 prefill=form.values.parameters|default:"" hint=form.hint contract_json=form.contract_json %} <div class="form-actions">{% include "core/submit_btn.html" with idle="Bind" busy_label="Binding…" guard="!submittable || !!error" %}</div> </form>{% include "core/cr_preview.html" with kind="ServiceBinding" %}</div>{% endblock %}
+        required /></label> {% include "core/params_drawer.html" with bind=1 prefill=form.values.parameters|default:"" bind_hint=form.bind_hint contract_json=form.contract_json %} <div class="form-actions">{% include "core/submit_btn.html" with idle="Bind" busy_label="Binding…" guard="!submittable || !!error" %}</div> </form>{% include "core/cr_preview.html" with kind="ServiceBinding" %}</div>{% endblock %}
