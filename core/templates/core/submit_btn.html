@@ -1,0 +1,3 @@
+<button class="btn btn-primary"
+        type="submit"
+        :disabled="busy || {{ guard|default:'!!error' }}"><span class="loading loading-spinner loading-xs" x-show="busy" x-cloak></span> <span x-text="busy ? '{{ busy_label|default:'Working…' }}' : '{{ idle }}'">{{ idle }}</span></button>

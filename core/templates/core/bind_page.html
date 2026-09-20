@@ -11,14 +11,4 @@
         class="input input-bordered"
         value="{{ form.values.name|default:'' }}"
         placeholder="app-binding (any language is fine)"
-        required /></label> <div class="adv-drawer"><div class="adv-head"><button type="button"
-        class="btn btn-ghost btn-sm"
-        @click="open = !open"
-        :aria-expanded="open">Advanced — free inputs</button><span class="adv-state"><template x-if="error"><span class="text-error" x-text="error"></span></template> <template x-if="!error && text.trim()"><span class="muted">inputs match the bind schema</span></template></span></div><div class="drawer-body" x-show="open" x-cloak><div class="drawer-label">Bind parameters (raw JSON) — <span id="bind-free">{% include "core/bind_freeinputs.html" with hint=form.hint contract_json=form.contract_json %}</span></div> <label><textarea name="parameters"
-          x-ref="params"
-          x-model="text"
-          rows="4"
-          class="textarea textarea-bordered"
-          placeholder='{ } — validated live against the bind schema'>{{ form.values.parameters|default:'' }}</textarea></label></div></div> <div class="form-actions"><button class="btn btn-primary"
-        type="submit"
-        :disabled="busy || !submittable || !!error"><span class="loading loading-spinner loading-xs" x-show="busy" x-cloak></span> <span x-text="busy ? 'Binding…' : 'Bind'">Bind</span></button></div> </form>{% include "core/cr_preview.html" with kind="ServiceBinding" %}</div>{% endblock %}
+        required /></label> {% include "core/params_drawer.html" with bind=1 prefill=form.values.parameters|default:"" hint=form.hint contract_json=form.contract_json %} <div class="form-actions">{% include "core/submit_btn.html" with idle="Bind" busy_label="Binding…" guard="!submittable || !!error" %}</div> </form>{% include "core/cr_preview.html" with kind="ServiceBinding" %}</div>{% endblock %}
