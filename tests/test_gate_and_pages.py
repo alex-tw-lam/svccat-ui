@@ -1,5 +1,5 @@
-"""The request gate (§1/§2/§10) and the page GET renders the old throwaway
-smoke covered but the committed suite did not: anonymous redirect,
+"""The request gate (§1/§2/§10) and the page GET renders the suite must
+cover: anonymous redirect,
 tenant-rejection visibility, no-store, every page/fragment render, OIDC
 round-trip shapes, and the gzip asset branch."""
 
@@ -167,8 +167,8 @@ class TestCredentialsFragment(MemoryCase):
 class TestTemplateHygiene(MemoryCase):
     def test_django_tags_never_span_lines(self):
         # Django's tag regex cannot cross a newline — a {% if %} split across
-        # lines by a formatter renders as literal text (this once broke every
-        # page). Guardrail: every {% and {{ opener must close on its own line.
+        # lines by a formatter renders it as literal text and breaks the
+        # page. Guardrail: every {% and {{ opener must close on its own line.
         import re
         from pathlib import Path
 

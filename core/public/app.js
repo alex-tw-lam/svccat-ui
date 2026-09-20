@@ -118,8 +118,8 @@ document.addEventListener("alpine:init", () => {
       if (!this.text || !this.text.trim() || !this.contract) return null;
       return smValidateParams(this.text, this.contract);
     },
-    // Live YAML preview of the CR this form will submit (Headlamp's
-    // form-beside-editor pattern). Shapes mirror core/kube.py exactly:
+    // Live YAML preview of the CR this form will submit, rendered beside
+    // the form. Shapes mirror core/kube.py exactly:
     // instance parameters always carry the platform-pinned
     // namespace/instance_name (pinned last), namespaced offerings reference
     // UUIDs the server resolves, bindings carry instanceRef + secretName.

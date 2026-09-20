@@ -1,7 +1,6 @@
 # REQUIREMENTS — the binding contract
 
-This repo is under an aggressive line-reduction campaign (goal: **100 lines** — aspirational; shrink
-monotonically every run). This file is the binding contract for that campaign:
+This file is the binding contract for the application:
 
 - **Every requirement below must continue to exist and work** after any change. Features may be
   reimplemented (smaller, via libraries) but never dropped or weakened.
@@ -15,10 +14,10 @@ descriptive, NOT binding — the binding design constraints are §9; file layout
 
 ## Metric
 
-Lines = every git-tracked file except `uv.lock` (generated) and `LINE-REDUCTION.md` (this campaign's log):
+Lines = every git-tracked file except `uv.lock` (generated):
 
 ```sh
-git ls-files | grep -vE '^(uv\.lock|LINE-REDUCTION\.md)$' | xargs wc -l | tail -1
+git ls-files | grep -vE '^uv\.lock$' | xargs wc -l | tail -1
 ```
 
 The gitignored vendored assets `core/public/htmx.min.js`, `alpine.min.js`, `daisyui.css`, `daisyui.css.gz` never count.
@@ -58,12 +57,3 @@ The gitignored vendored assets `core/public/htmx.min.js`, `alpine.min.js`, `dais
 12. **Runs** — `uv sync` then `manage.py runserver` boots with the memory backend; with the quickstart
     env (`ADMIN_PASSWORD` + `ALLOWED_TENANTS`) the UI is fully browsable; `manage.py check` passes on
     a fresh clone (vendored assets absent); the Docker image runs gunicorn on :8080.
-
-## Campaign rules (for the scheduled reducer)
-
-- Prefer libraries over custom code — Django built-ins, stdlib, existing dependencies, or a new
-  dependency via `uv add` whenever it nets fewer lines. Hunt these opportunities first.
-- Each change: verify (`uv run python manage.py check` + boot smoke on the memory backend), commit with a message noting
-  the lines saved, append the run to `LINE-REDUCTION.md` (before/after, what changed).
-- Never rewrite history, never push, never create/modify automations, never weaken or delete this
-  contract. `REQUIREMENTS.md` prose may be tightened but no requirement may be removed.

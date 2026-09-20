@@ -1,5 +1,5 @@
-"""Full-flow smoke on the in-memory backend (the committed port of the
-campaign's curl smoke): login → catalog → provision (every 400 path) →
+"""Full-flow smoke on the in-memory backend (port of the original curl
+smoke): login → catalog → provision (every 400 path) →
 detail → edit → bind → credentials → delete → styled 404."""
 
 from tests.base import MemoryCase

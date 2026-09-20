@@ -509,7 +509,7 @@ pre.creds {
   font-size: 13px;
 }
 
-/* Headlamp-style side-by-side: form left, live CR YAML preview right */
+/* side-by-side: form left, live CR YAML preview right */
 .cr-split {
   display: flex;
   gap: 20px;
