@@ -97,6 +97,7 @@ document.addEventListener("alpine:init", () => {
   // Free-input drawer on the provision/edit/bind forms: raw-JSON textarea (the POST input, x-model), drawer toggle, schema modal, the busy flag, and the keystroke gate above.
   Alpine.data("smDrawer", (opts = {}) => ({
     open: !!opts.open,
+    previewOpen: false,
     busy: false,
     schemaOpen: false,
     submittable: opts.submittable !== false,

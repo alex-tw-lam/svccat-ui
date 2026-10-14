@@ -137,16 +137,6 @@ body {
   font-size: 14px;
   color: #1f2328;
 }
-.detail-cols {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-.detail-cols > .card {
-  flex: 1;
-  min-width: 340px;
-}
 /* catalog tiles ride DaisyUI's .card .card-bordered .card-compact chassis
    (border, bg, flex column, 1rem padding, 8px gap); what stays ours: link
    reset, hover glow, current-state border, the 16px title (card-title
@@ -386,6 +376,12 @@ pre.creds {
    rows (brand + account, then cluster + namespace selector), the sidebar
    becomes a tappable strip, wide tables scroll, and form controls sit at
    16px so iOS Safari does not zoom the page on focus */
+/* CR preview on phones: the side panel is hidden and the toggle button
+   opens the same preview as a modal (desktop keeps the side panel) */
+.cr-mobile-toggle {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .topbar {
     flex-wrap: wrap;
@@ -462,14 +458,6 @@ pre.creds {
   .table-wrap table.table-wide {
     min-width: 620px;
   }
-  /* stack the detail cards — with the desktop min-width floor lifted they
-     would otherwise sit three-abreast at ~160px each */
-  .detail-cols {
-    flex-direction: column;
-  }
-  .detail-cols > .card {
-    min-width: 0;
-  }
   .page-head {
     align-items: flex-start;
   }
@@ -479,8 +467,8 @@ pre.creds {
   .login-card {
     margin: 24px auto;
   }
-  .cr-split { flex-direction: column; }
-  .cr-preview { max-width: none; position: static; width: 100%; margin-top: 6px; }
+  .cr-split .cr-preview { display: none; }
+  .cr-mobile-toggle { display: inline-flex; margin-top: 6px; }
 }
 .loading.loading-xs {
   margin-right: 6px;
@@ -542,4 +530,45 @@ pre.creds {
   min-height: 200px;
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+/* instance detail: tab panes below the tab bar (hash-derived Alpine state
+   survives the 3 s poll swap) */
+.tabpane {
+  margin-top: 14px;
+}
+/* join button groups: a delete form in the group contributes its button
+   directly (form keeps submit semantics, loses its box) */
+.join > form.join-form {
+  display: contents;
+}
+/* flash toast: transient outcomes fade out on their own after 6 s;
+   persistent warnings (tenant fallback) stay as top banners */
+.flash-toast {
+  z-index: 60;
+  animation: toast-out 0.5s ease 6s forwards;
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.copy-toast {
+  z-index: 60;
+}
+/* reveal-in-flight placeholder: htmx marks the hx-indicator target while the
+   secret read runs */
+#binding-creds.htmx-request::after {
+  content: "";
+  display: block;
+  height: 2.75rem;
+  border-radius: 8px;
+  background: oklch(92% 0.01 260);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
 }

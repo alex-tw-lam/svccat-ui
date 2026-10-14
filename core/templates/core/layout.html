@@ -15,7 +15,13 @@
     <script defer src="/alpine.min.js"></script>
   </head>
   <body>
-    {% if demo %}
+    {% if flash == "deletion-started" %}
+    <div class="toast toast-end flash-toast" role="status">
+      <div class="alert alert-info">
+        Deletion started — the row disappears when the broker finishes.
+      </div>
+    </div>
+    {% endif %}{% if demo %}
     <div role="alert" class="alert alert-warning demo-banner">
       Demo backend — in-memory mock: the catalog, instances and bindings are
       simulated; nothing touches a cluster, and all data is lost on restart.
@@ -59,7 +65,7 @@
             <a
               class="ns-item ns-sub{% if '/instances' in request.path or '/bindings' in request.path %} active{% endif %}"
               href="/instances?tenant={{ tenant }}"
-              >Instances</a
+              ><span class="indicator">Instances<span class="indicator-item indicator-item-badge badge badge-primary" id="inflight-badge"{% if not inflight %} hidden{% endif %}>{{ inflight }}</span></span></a
             >
           </nav>
         </aside>
@@ -70,10 +76,6 @@
             Namespace "{{ tenant_rejected }}" is not available to your account —
             showing {{ tenant }} instead (your namespaces come from your login
             groups).
-          </div>
-          {% endif %}{% if flash == "deletion-started" %}
-          <div role="alert" class="alert alert-info">
-            Deletion started — the row disappears when the broker finishes.
           </div>
           {% endif %}{% if crumbs %}
           <div class="breadcrumbs" aria-label="Breadcrumb">

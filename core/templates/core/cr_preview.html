@@ -12,3 +12,5 @@
   </div>
   <pre class="cr-preview-body" x-text="crYaml()"></pre>
 </div>
+<button type="button" class="btn btn-outline btn-sm cr-mobile-toggle" @click="previewOpen = true" x-cloak>Preview YAML</button>
+<div class="modal" :class="previewOpen ? 'modal-open' : ''" x-cloak><div class="modal-box"><h3 class="cr-preview-title">{{ kind }} preview</h3><p class="muted">live — updates as you fill the form</p><pre class="cr-preview-body" x-text="crYaml()"></pre><div class="modal-action"><button type="button" class="btn btn-sm" @click="previewOpen = false">Close</button></div></div><label class="modal-backdrop" @click="previewOpen = false"></label></div>

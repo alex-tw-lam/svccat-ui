@@ -1,1 +1,1 @@
-<form method="post" action="{{ action }}" class="inline" data-confirm="{{ confirm }}"><button class="btn btn-error btn-outline{% if small %} btn-sm{% endif %}" type="submit">Delete</button></form>
+<form method="post" action="{{ action }}" class="inline{% if join %} join-form{% endif %}" data-confirm="{{ confirm }}"><button class="btn btn-error btn-outline{% if small %} btn-sm{% endif %}{% if join %} join-item{% endif %}" type="submit">Delete</button></form>

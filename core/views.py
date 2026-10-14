@@ -312,6 +312,14 @@ def _page_ctx(request, title, **extra):
         "tenant": getattr(request, "tenant", ""),
         "tenant_rejected": getattr(request, "tenant_rejected", None),
         "flash": request.GET.get("flash"),
+        # sidebar in-flight count for the Instances indicator; polls skip it
+        # (their OOB span carries the fresh number instead of a second list
+        # call every 3 s)
+        "inflight": (
+            sum(1 for r in _instances(request.tenant) if r["status"] in IN_FLIGHT)
+            if getattr(request, "tenant", None) and not request.GET.get("partial")
+            else 0
+        ),
         **extra,
     }  # tenants: middleware-resolved list (admin: cluster-wide in kube mode), else the session's
 
@@ -578,6 +586,7 @@ def instances_page(request):
             "rows": rows,
             "tenant": request.tenant,
             "poll": any(r["status"] in IN_FLIGHT for r in rows) or not rows,
+            "inflight": sum(1 for r in rows if r["status"] in IN_FLIGHT),
         },
         None,
     )  # poll while in flight OR empty — an empty list's staleness is the one state a user cannot see through
