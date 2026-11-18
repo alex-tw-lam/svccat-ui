@@ -65,7 +65,7 @@
             <a
               class="ns-item ns-sub{% if '/instances' in request.path or '/bindings' in request.path %} active{% endif %}"
               href="/instances?tenant={{ tenant }}"
-              ><span class="indicator">Instances<span class="indicator-item indicator-item-badge badge badge-primary" id="inflight-badge"{% if not inflight %} hidden{% endif %}>{{ inflight }}</span></span></a
+              ><span class="indicator">Instances<span class="indicator-item badge badge-primary" id="inflight-badge"{% if not inflight %} hidden{% endif %}>{{ inflight }}</span></span></a
             >
           </nav>
         </aside>

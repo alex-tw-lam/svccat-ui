@@ -18,6 +18,6 @@
           class="input input-bordered"
           value="{{ form.values.name|default:'' }}"
           placeholder="my-redis (any language is fine)"
-          required /></label>{% include "core/params_drawer.html" with hints=form.hints precedence=form.precedence prefill=form.values.parameters|default:"" offering_id=form.offering_id plan_id=form.plan_id tenant=tenant schema_json=form.schema_json %} <div class="form-actions">{% include "core/submit_btn.html" with idle="Provision" busy_label="Submitting…" guard="!submittable || !!error" %}</div></form>
+          required /></label>{% include "core/params_drawer.html" with hints=form.hints precedence=form.precedence prefill=form.values.parameters|default:"" offering_id=form.offering_id plan_id=form.plan_id tenant=tenant schema_json=form.schema_json %} <div class="card-actions">{% include "core/submit_btn.html" with idle="Provision" busy_label="Submitting…" guard="!submittable || !!error" %}</div></form>
   {% include "core/cr_preview.html" with kind="ServiceInstance" %}
 </div>

@@ -161,7 +161,7 @@ class TestCredentialsFragment(MemoryCase):
             "core/credentials.html", {"creds_json": "{}", "name": "app-binding"}
         )
         self.assertIn("Credentials — app-binding", html)
-        self.assertIn('data-dismiss="binding-creds"', html)
+        self.assertIn("binding-creds').replaceChildren()", html)
 
 
 class TestTemplateHygiene(MemoryCase):

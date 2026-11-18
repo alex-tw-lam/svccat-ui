@@ -21,14 +21,6 @@ document.addEventListener(
   },
   true,
 );
-// Credential panel retraction: Reveal swaps credentials into a container
-// (id in data-dismiss); Hide empties that container so secrets leave the
-// screen with no server round-trip. Delegated, so it survives htmx swaps.
-document.addEventListener("click", (e) => {
-  const btn =
-    e.target instanceof Element ? e.target.closest("[data-dismiss]") : null;
-  if (btn) document.getElementById(btn.dataset.dismiss)?.replaceChildren();
-});
 // Namespace switcher (topbar scope dropdown): keeps the current path and every other query parameter, swaps only ?tenant=.
 document.addEventListener("change", ({ target }) => {
   const sel =
@@ -107,7 +99,8 @@ document.addEventListener("alpine:init", () => {
       const ta = this.$refs.params;
       if (ta) this.text = ta.value || "";
       this.$root.addEventListener("input", () => this.rev++);
-    }, // seed text from the server prefill (edit / failed-post re-render); rev bumps re-render the CR preview on any field edit
+      this.$root.addEventListener("htmx:afterSwap", () => this.rev++);
+    }, // seed text from the server prefill (edit / failed-post re-render); rev bumps re-render the CR preview on any field edit AND after htmx swaps the selects (the swapped DOM carries no input event)
     get contract() {
       try {
         return JSON.parse(this.$refs.contract.textContent);
@@ -205,9 +198,7 @@ document.addEventListener("alpine:init", () => {
           this.copied = false;
         }, 2000);
       };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(done);
-      } else done();
+      navigator.clipboard?.writeText(text)?.then(done).catch(done) ?? done();
     },
   })); // Copy-to-clipboard for revealed credentials (already on screen; copying must not re-fetch)
 });

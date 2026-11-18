@@ -191,12 +191,6 @@ h2 {
   gap: 12px;
   flex-wrap: wrap;
 }
-.row-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
 form.inline {
   display: inline;
 }
@@ -220,8 +214,9 @@ form.inline {
   color: #1d4ed8;
   border-color: transparent;
 }
-.err-text,
 .text-error {
+  /* AA override of the theme's lighter error red (daisyui ships .text-error
+     at ~3:1 on white — small text needs darker) */
   color: #dc2626;
 }
 .grid {
@@ -249,10 +244,6 @@ form.inline {
 .form label > .select,
 .form label > .textarea {
   width: 100%;
-}
-.form-actions {
-  display: flex;
-  gap: 10px;
 }
 .login-card {
   max-width: 420px;

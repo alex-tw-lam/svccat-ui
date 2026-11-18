@@ -996,15 +996,10 @@ def _bind_form_ctx(insts, preset, error="", values=None):
     )
     free = form["editable"] if form else []
     computed = [f["name"] for f in (bind or {}).get("computedInputs", [])]
-    hint = (
-        "free bind inputs: none"
-        if not form and not bind
-        else f"free bind inputs: {', '.join(free) or 'none'}"
-        + (
-            f" (computed bind inputs projected from the instance: {', '.join(computed)})"
-            if computed
-            else ""
-        )
+    hint = f"free bind inputs: {', '.join(free) or 'none'}" + (
+        f" (computed bind inputs projected from the instance: {', '.join(computed)})"
+        if computed
+        else ""
     )
     return {
         "insts": insts,
