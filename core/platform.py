@@ -78,14 +78,17 @@ def offerings(tenant):
     for cls in classes:
         out.append(
             {
-                "id": str(cls["id"]),
+                # use the class/plan names as IDs — svccat-ui's input_schema
+                # keys offerings by external name ("redis", "postgresql"),
+                # and the plan select submits the plan name ("small")
+                "id": cls["name"],
                 "name": cls["name"],
                 "description": cls.get("description", ""),
                 "tags": cls.get("tags", []),
                 "namespaced": False,
                 "plans": [
                     {
-                        "id": str(p["id"]),
+                        "id": p["name"],
                         "name": p["name"],
                         "description": p.get("description", ""),
                     }
@@ -94,8 +97,8 @@ def offerings(tenant):
                 # TODO: when the platform carries input schemas per class,
                 # pass them through; for now they are empty (the drawer
                 # renders no typed fields)
-                "inputSchema": None,
-                "bindInputSchema": None,
+                "inputSchema": {},
+                "bindInputSchema": {},
             }
         )
     return out
@@ -116,8 +119,8 @@ def instances(tenant):
                 "name": inst["name"],
                 "resourceName": inst["name"],
                 "parameters": inst.get("parameters") or None,
-                "offeringId": str(inst["service_class"]),
-                "planId": str(inst["service_plan"]),
+                "offeringId": inst.get("service_class_name", str(inst["service_class"])),
+                "planId": inst.get("service_plan_name", str(inst["service_plan"])),
                 "status": inst["status"],
                 "createdAt": inst.get("created_at", ""),
                 "reason": "",
@@ -136,13 +139,18 @@ def find_instance(tenant, inst_id):
     return None
 
 
-def create_instance(tenant, name, class_id, plan_id, params, display_name=None):
-    """POST a new instance to the platform."""
+def create_instance(tenant, name, class_name, plan_name, params, display_name=None):
+    """POST a new instance to the platform (names are the class/plan
+    external names, matching what offerings() returns as IDs)."""
     tid = _tenant_id(tenant)
+    # resolve names to the platform's numeric FK IDs
+    classes = _get("/api/v1/classes/")
+    cls = next(c for c in classes if c["name"] == class_name)
+    plan = next(p for p in cls["plans"] if p["name"] == plan_name)
     body = {
         "tenant": tid,
-        "service_class": int(class_id),
-        "service_plan": int(plan_id),
+        "service_class": cls["id"],
+        "service_plan": plan["id"],
         "name": name,
         "parameters": params or {},
     }
@@ -150,13 +158,18 @@ def create_instance(tenant, name, class_id, plan_id, params, display_name=None):
     return result
 
 
-def update_instance(tenant, inst_id, plan_id, params):
+def update_instance(tenant, inst_id, plan_name, params):
     """PATCH an existing instance (plan change or parameter update)."""
-    result = _patch(f"/api/v1/instances/{inst_id}/", {
-        "service_plan": int(plan_id),
-        "parameters": params or {},
-    })
-    return result
+    classes = _get("/api/v1/classes/")
+    for cls in classes:
+        for p in cls["plans"]:
+            if p["name"] == plan_name:
+                result = _patch(f"/api/v1/instances/{inst_id}/", {
+                    "service_plan": p["id"],
+                    "parameters": params or {},
+                })
+                return result
+    raise RuntimeError(f"plan {plan_name!r} not found in any class")
 
 
 def delete_instance(tenant, inst_id):
