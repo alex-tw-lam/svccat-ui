@@ -2,13 +2,30 @@
 smoke): login → catalog → provision (every 400 path) →
 detail → edit → bind → credentials → delete → styled 404."""
 
+from django.test import override_settings
+
 from tests.base import MemoryCase
 
 
 class TestSignInPage(MemoryCase):
-    def test_login_page_shows_keycloak_button(self):
+    def test_login_page_hides_keycloak_without_issuer(self):
+        # a Keycloak button with the placeholder issuer fails 100% of the
+        # time — it must not render
         resp = self.anon.get("/auth/login")
         self.assertEqual(resp.status_code, 200)
+        self.assertNotIn(b"Sign in with Keycloak", resp.content)
+        self.assertIn(b"Sign in as admin", resp.content)
+
+    def test_login_page_shows_keycloak_with_issuer(self):
+        with override_settings():
+            import core.views as views
+
+            real = views.ISSUER
+            views.ISSUER = "https://keycloak.real.example/realms/platform"
+            try:
+                resp = self.anon.get("/auth/login")
+            finally:
+                views.ISSUER = real
         self.assertIn(b"Sign in with Keycloak", resp.content)
 
     def test_demo_banner_labels_the_mock_backend(self):

@@ -4,6 +4,8 @@ import logging
 import traceback
 
 from django.http import Http404
+
+from core.views import _tenant_choices
 from django.shortcuts import redirect
 
 from core import kube
@@ -31,11 +33,13 @@ class TenantMiddleware:
                 if session.get("local") and kube.kube
                 else (session.get("tenants") or [])
             )
-            request.tenant_list = tenants
-            requested = request.GET.get("tenant")
+            request.tenant_list = _tenant_choices(tenants)
+            requested = request.GET.get("tenant") or session.get("last_tenant")
             tenant = (
-                requested if requested in tenants else (tenants[0] if tenants else "")
+                requested if requested in tenants else (request.tenant_list[0] if request.tenant_list else "")
             )
+            if tenant and session.get("last_tenant") != tenant:
+                session["last_tenant"] = tenant  # land where the user last was
             request.tenant = tenant
             # tenant isolation with visible semantics: a ?tenant= the
             # caller's token does not allow falls back to their own tenant

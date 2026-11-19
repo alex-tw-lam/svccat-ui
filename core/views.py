@@ -29,6 +29,13 @@ from core.input_schema import (
 logger = logging.getLogger(__name__)
 PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "public")
 IN_FLIGHT = ["provisioning", "updating", "deprovisioning"]
+# namespaces that are never a provisioning target; the admin's switcher and
+# fallback resolution skip them
+SYSTEM_NAMESPACES = ("kube-node-lease", "kube-public", "kube-system")
+
+
+def _tenant_choices(tenants):
+    return [t for t in tenants if not str(t).startswith(SYSTEM_NAMESPACES)]
 NAMESPACE_RE = re.compile(
     r"^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
 )  # tenants: token groups ∩ ALLOWED_TENANTS, else FALLBACK_TENANTS (fail closed); names must be RFC 1123 # labels (an underscore group like "team_a" can never be a namespace — filtered here vs a 422 mid-provision)
@@ -411,6 +418,9 @@ def _login_page(request, status=200, **extra):
             request,
             "Sign in",
             local_enabled=bool(os.environ.get("ADMIN_PASSWORD")),
+            # a Keycloak button that 100%-fails (placeholder issuer) is worse
+            # than no button
+            kc_enabled=not ISSUER.startswith("https://keycloak.example.com"),
             **extra,
         ),
         status=status,
