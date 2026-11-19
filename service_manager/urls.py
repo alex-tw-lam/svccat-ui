@@ -4,6 +4,8 @@ from django.urls import include, path
 
 from core import views
 
+handler404 = "core.views.handler404"  # styled 404 for unknown paths
+
 urlpatterns = [
     path("", views.root, name="root"),
     # auth: local admin sign-in + OIDC authorization-code + PKCE, one

@@ -17,7 +17,7 @@
            hx-swap="outerHTML">{% for p in form.offering.plans %}<option value="{{ p.id }}"{% if p.id == form.plan_id %} selected{% endif %}>{{ p.name }} — {{ p.description }}</option>{% endfor %}</select></label> {% include "core/plan_fields.html" with plan_id=form.plan_id plan_fields=form.plan_fields %}<label>Instance name <input name="name"
           class="input input-bordered"
           value="{{ form.values.name|default:'' }}"
-          placeholder="my-redis (any language is fine)"
+          placeholder="my-{{ form.offering_id|default:"service" }} (any language is fine)"
           required /></label>{% include "core/params_drawer.html" with hints=form.hints precedence=form.precedence prefill=form.values.parameters|default:"" offering_id=form.offering_id plan_id=form.plan_id tenant=tenant schema_json=form.schema_json %} <div class="card-actions">{% include "core/submit_btn.html" with idle="Provision" busy_label="Submitting…" guard="!submittable || !!error" %}</div></form>
   {% include "core/cr_preview.html" with kind="ServiceInstance" %}
 </div>

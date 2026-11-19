@@ -326,6 +326,11 @@ def _page_ctx(request, title, **extra):
     }  # tenants: middleware-resolved list (admin: cluster-wide in kube mode), else the session's
 
 
+def handler404(request, exception=None):
+    # Django's plain 404 has no chrome; every miss renders the styled card
+    return _error_page(request, 404, "services", "page not found")
+
+
 def _error_page(request, status, back, message):
     return render(
         request,
@@ -622,8 +627,13 @@ def _offering_ctx(cats, offering_id, plan_default=None, error="", values=None):
         if schema
         else None
     )
+    example = None
+    for f in (offering or {}).get("inputSchema", {}).get("userInputs") or []:
+        example = json.dumps({f["name"]: f.get("default", "value")})
+        break
     return {
         "offering": offering,
+        "param_example": example,
         "plan_id": plan_id,
         "error": error,
         "values": values or {},
@@ -675,7 +685,7 @@ def provision_get(request):
         else _provision_page(
             request,
             cats,
-            requested or (cats[0]["id"] if cats else ""),
+            requested,
             tenant,
             values={"planId": request.GET.get("plan")}
             if request.GET.get("plan")
