@@ -886,12 +886,26 @@ def instance_show(request, inst_id):
     poll = inst["status"] in IN_FLIGHT or any(
         b["status"] in ("creating", "deleting") for b in own
     )
+    events = _events(tenant, "ServiceInstance", inst["resourceName"])
+    if inst["status"] == "failed":
+        # the controller writes a success-shaped reason (orphan mitigation
+        # completed) on the CR condition; the real error is a Warning event —
+        # surface it as the message so the user sees WHY it failed
+        warning = next(
+            (e for e in reversed(events) if e["type"] == "Warning"), None
+        )
+        if warning:
+            inst = dict(
+                inst,
+                reason=warning["reason"],
+                message=warning["message"],
+            )
     detail = {
         "inst": inst,
         "offering_name": offering_name,
         "own": own,
         "tenant": tenant,
-        "events": _events(tenant, "ServiceInstance", inst["resourceName"]),
+        "events": events,
         "poll": poll,
         "params_json": json.dumps(inst.get("parameters") or {}, indent=2),
         "created_fmt": fmt_created(inst.get("createdAt")),
