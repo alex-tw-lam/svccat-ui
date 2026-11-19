@@ -157,7 +157,8 @@ class TestCredentialsFragment(MemoryCase):
         from django.template.loader import render_to_string
 
         html = render_to_string(
-            "core/credentials.html", {"creds_json": "{}", "name": "app-binding"}
+            "core/credentials.html",
+            {"creds": [("host", "x")], "creds_json": "{}", "name": "app-binding", "secret_name": "s1", "tenant": "t1"},
         )
         self.assertIn("Credentials — app-binding", html)
         self.assertIn("binding-creds').replaceChildren()", html)

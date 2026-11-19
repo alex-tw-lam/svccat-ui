@@ -346,6 +346,33 @@ pre {
 pre.creds {
   max-width: 560px;
 }
+.creds-list {
+  margin: 0;
+  min-width: 0;
+}
+.creds-list dt {
+  white-space: nowrap;
+}
+.creds-value {
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.creds-actions {
+  display: flex;
+  gap: 8px;
+}
+.creds-incluster {
+  font-size: 13px;
+  margin: 0;
+}
+.creds-kubectl {
+  font-size: 11px;
+  margin: 0;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
 .creds-wrap {
   display: flex;
   flex-direction: column;

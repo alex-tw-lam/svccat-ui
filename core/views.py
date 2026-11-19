@@ -1047,7 +1047,13 @@ def binding_credentials(request, binding_id):
     return render(
         request,
         "core/credentials.html",
-        {"creds_json": json.dumps(creds, indent=2), "name": b["name"]},
+        {
+            "creds": sorted(creds.items()),
+            "creds_json": json.dumps(creds, indent=2),
+            "name": b["name"],
+            "secret_name": b["secretName"],
+            "tenant": request.tenant,
+        },
     )
 
 
