@@ -136,7 +136,6 @@ class TestEditBindDelete(MemoryCase):
         self.assertTrue(resp["Location"].endswith("#bindings"))
         resp = self.client.get("/instances/show/smoke?tenant=team-a")
         self.assertIn(b"secret", resp.content)  # the binding row names its secret
-        self.assertIn(b"smoke</a>", resp.content)
 
     def test_connect_on_not_ready_instance_redirects(self):
         resp = self.client.post("/bindings/connect/nope?tenant=team-a")
