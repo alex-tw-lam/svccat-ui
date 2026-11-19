@@ -808,8 +808,14 @@ def provision_post(request):
         body.get(k, "") for k in ("name", "offeringId", "planId")
     )
     try:
-        if not name or not offering_id or not plan_id:
-            raise FormError("name, service and plan are required")
+        if not offering_id or not plan_id:
+            raise FormError("service and plan are required")
+        if not name:
+            # auto-name: the offering + a short unique counter
+            taken = {r["name"] for r in _safe(_instances, tenant)}
+            name = next(
+                f"{offering_id}-{n}" for n in range(1, 999) if f"{offering_id}-{n}" not in taken
+            )
         params = _form_params(body, "Instance")
         checked = _checked(validate_user_params(offering_id, params))
         slug = kube.instance_slug(name)

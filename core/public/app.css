@@ -560,7 +560,6 @@ pre.creds {
 .cr-preview-body {
   font-size: 12px;
   margin: 0;
-  min-height: 200px;
   white-space: pre-wrap;
   word-break: break-all;
 }

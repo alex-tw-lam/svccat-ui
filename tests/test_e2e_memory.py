@@ -54,7 +54,7 @@ class TestProvision(MemoryCase):
     def test_missing_fields_repaints_400(self):
         resp = self.post(name="")
         self.assertEqual(resp.status_code, 400)
-        self.assertIn(b"name, service and plan are required", resp.content)
+        self.assertIn(b"service and plan are required", resp.content)
 
     def test_bad_json_repaints_400_without_bind_prefix(self):
         resp = self.post(
