@@ -593,23 +593,31 @@ def _plan_fields(form):
     ]
 
 
-def _free_input_hints(form):
-    # one "name — type — one of: … — default: … — required" hint per editable
-    # free input, rendered next to the raw-JSON drawer
-    hints = []
-    for name in (form or {}).get("editable", []):
-        p = form["schema"]["properties"].get(name) or {}
-        bits = [name]
-        if p.get("type"):
-            bits.append(str(p["type"]))
-        if p.get("enum"):
-            bits.append("one of: " + ", ".join(p["enum"]))
-        if p.get("default") is not None:
-            bits.append("default: " + json.dumps(p["default"]))
-        if name in form["schema"].get("required", []):
-            bits.append("required")
-        hints.append(" — ".join(bits))
-    return hints
+def _user_fields(offering, values):
+    # one typed descriptor per editable free input: the drawer renders a real
+    # labeled control (select for enum, number input, text input) instead of
+    # asking the user to write JSON; values pre-fill from the instance's
+    # current parameters (edit mode) or the schema default (provision)
+    params = {}
+    raw = (values or {}).get("parameters") or ""
+    try:
+        params = json.loads(raw) if raw.strip() else {}
+    except (ValueError, TypeError):
+        params = {}
+    fields = []
+    for f in (offering or {}).get("inputSchema", {}).get("userInputs") or []:
+        name = f["name"]
+        fields.append(
+            {
+                "name": name,
+                "type": f.get("type", "string"),
+                "enum": f.get("enum") or [],
+                "default": f.get("default"),
+                "details": f.get("details", name),
+                "value": params.get(name, f.get("default", "")),
+            }
+        )
+    return fields
 
 
 def _contract_json(offering_id, op):
@@ -648,7 +656,7 @@ def _offering_ctx(cats, offering_id, plan_default=None, error="", values=None):
         "error": error,
         "values": values or {},
         "precedence": precedence,
-        "hints": _free_input_hints(form),
+        "fields": _user_fields(offering, values),
         "plan_fields": _plan_fields(form),
         "schema_json": json.dumps(form or {}, indent=2) if offering else "",
         "contract_json": _contract_json(offering_id if offering else None, "provision"),

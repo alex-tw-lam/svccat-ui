@@ -90,6 +90,7 @@ document.addEventListener("alpine:init", () => {
   Alpine.data("smDrawer", (opts = {}) => ({
     open: !!opts.open,
     previewOpen: false,
+    jsonMode: false,
     busy: false,
     schemaOpen: false,
     submittable: opts.submittable !== false,
@@ -109,8 +110,24 @@ document.addEventListener("alpine:init", () => {
       }
     }, // re-read every access: htmx swaps refresh it
     get error() {
-      if (!this.text || !this.text.trim() || !this.contract) return null;
+      if (!this.jsonMode || !this.text || !this.text.trim() || !this.contract)
+        return null;
       return smValidateParams(this.text, this.contract);
+    },
+    // collect the typed [data-param] fields into the hidden parameters
+    // textarea (the POST field) — the server contract is unchanged
+    serializeFields() {
+      if (this.jsonMode) return; // the textarea is the POST field already
+      const params = {};
+      this.$root.querySelectorAll("[data-param]").forEach((el) => {
+        const v = el.type === "checkbox" ? el.checked : el.value;
+        if (v === "" || v === false) return; // empty = use the default
+        params[el.dataset.param] =
+          el.type === "number" || el.type === "checkbox" ? Number(v) : v;
+      });
+      const ta = this.$root.querySelector('textarea[name="parameters"]');
+      if (ta) ta.value = Object.keys(params).length ? JSON.stringify(params) : "";
+      if (ta) this.text = ta.value;
     },
     // Live YAML preview of the CR this form will submit, rendered beside
     // the form. Shapes mirror core/kube.py exactly:

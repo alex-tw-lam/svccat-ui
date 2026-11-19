@@ -1,16 +1,13 @@
 {% comment %}
-  The Advanced drawer: free user inputs against the offering schema. Lives
-  inside the smDrawer Alpine component of the including form.
-{% endcomment %}<div class="adv-drawer"><div class="adv-head"><button type="button"
-        class="btn btn-ghost btn-sm"
-        @click="open = !open"
-        :aria-expanded="open">Advanced inputs</button><span class="adv-state"><template x-if="error"><span class="text-error" x-text="error"></span></template> <template x-if="!error && text.trim()"><span class="muted">inputs match the schema</span></template></span></div> <div class="drawer-body" x-show="open" x-collapse x-cloak><div class="drawer-label">Parameters (raw JSON) — free inputs: {% if hints %}{% for h in hints %}<code>{{ h }}</code> {% endfor %}{% else %}none{% endif %}</div> <label><textarea name="parameters"
+  The parameters section: typed form fields rendered from the offering's
+  user-input contract (select for enum, number input, text input), with a
+  raw-JSON escape hatch behind a toggle. Lives inside the smDrawer Alpine
+  component of the including form; serializeFields() runs on submit and
+  writes the collected values into the hidden parameters textarea (the POST
+  field) so the server contract is unchanged.
+{% endcomment %}<div class="params-section">{% if fields %}{% for f in fields %}<label class="param-field">{{ f.details }} {% if f.enum %}<select data-param="{{ f.name }}" class="select select-bordered">{% for opt in f.enum %}<option value="{{ opt }}"{% if opt == f.value %} selected{% endif %}>{{ opt }}</option>{% endfor %}</select>{% elif f.type == "number" %}<input data-param="{{ f.name }}" type="number" class="input input-bordered" value="{{ f.value }}" />{% elif f.type == "boolean" %}<input data-param="{{ f.name }}" type="checkbox" class="checkbox"{% if f.value %} checked{% endif %} />{% else %}<input data-param="{{ f.name }}" type="text" class="input input-bordered" value="{{ f.value }}" placeholder="{{ f.default }}" />{% endif %}</label>{% endfor %}{% else %}<p class="muted param-none">No user parameters for this service.</p>{% endif %} <button type="button" class="btn btn-ghost btn-xs" @click="jsonMode = !jsonMode"><span x-text="jsonMode ? 'Show fields' : 'Edit as JSON'"></span></button><div class="drawer-body" x-show="jsonMode" x-collapse x-cloak><label><textarea name="parameters"
           x-ref="params"
           x-model="text"
-          rows="6"
+          rows="4"
           class="textarea textarea-bordered"
-          placeholder='{{ param_example|default:"{ }" }}'>{{ prefill }}</textarea></label> {% if precedence %}<p class="muted drawer-hint">Parameter precedence: computed inputs (broker) &gt; plan inputs (pick another plan) &gt; your JSON below. Locked for this service — computed: {{ precedence.computed }}; plan: {{ precedence.plan }}; platform-pinned: namespace, instance_name.</p>{% endif %} {% if schema_json and schema_json != "{}" %}<button type="button" class="btn btn-ghost btn-sm" @click="schemaOpen = true">Form schema (JSON)</button><div class="modal" :class="schemaOpen ? 'modal-open' : ''" x-trap.inert.noscroll="schemaOpen" x-cloak><div class="modal-box"><h3>Form schema (JSON)</h3><p class="muted">The same contract validates your JSON live in this drawer and again server-side — computed inputs are omitted, plan inputs are locked to the selected plan, unknown keys are rejected.</p><pre>{{ schema_json }}</pre><div class="modal-action"><a class="btn btn-sm"
-   href="/instances/new/schema?offeringId={{ offering_id }}&plan={{ plan_id|default:'' }}&tenant={{ tenant }}"
-   download>Download schema</a><button type="button"
-        class="btn btn-ghost btn-sm"
-        @click="schemaOpen = false">Close</button></div></div><label class="modal-backdrop" @click="schemaOpen = false"></label></div>{% endif %}</div> </div>
+          placeholder='{{ param_example|default:"{ }" }}'>{{ prefill }}</textarea></label> <span class="adv-state"><template x-if="error"><span class="text-error" x-text="error"></span></template> <template x-if="!error && text.trim()"><span class="muted">inputs match the schema</span></template></span> {% if precedence %}<p class="muted drawer-hint">Locked for this service — computed: {{ precedence.computed }}; plan: {{ precedence.plan }}; platform-pinned: namespace, instance_name. <button type="button" class="btn btn-ghost btn-xs" @click="schemaOpen = true">Form schema</button></p>{% endif %}{% if schema_json and schema_json != "{}" %}<div class="modal" :class="schemaOpen ? 'modal-open' : ''" x-trap.inert.noscroll="schemaOpen" x-cloak><div class="modal-box"><h3>Form schema (JSON)</h3><p class="muted">The same contract validates server-side — computed inputs are omitted, plan inputs are locked to the selected plan, unknown keys are rejected.</p><pre>{{ schema_json }}</pre><div class="modal-action"><button type="button" class="btn btn-sm" @click="schemaOpen = false">Close</button></div></div><label class="modal-backdrop" @click="schemaOpen = false"></label></div>{% endif %}</div></div>

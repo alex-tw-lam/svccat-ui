@@ -2,7 +2,7 @@
   <form method="post"
         action="/instances/new?tenant={{ tenant }}"
         class="card form"
-        @submit="busy = true; if (error) $event.preventDefault()"><script type="application/json" x-ref="contract">{{ form.contract_json|safe }}</script>{% if form.error %}<div role="alert" class="alert alert-error">{{ form.error }}</div>{% endif %} {% if form.locked %}<input type="hidden" name="offeringId" value="{{ form.offering_id }}" />{% endif %}<label>Service {% if form.locked %}<input class="input input-bordered"
+        @submit="serializeFields(); busy = true; if (error) $event.preventDefault()"><script type="application/json" x-ref="contract">{{ form.contract_json|safe }}</script>{% if form.error %}<div role="alert" class="alert alert-error">{{ form.error }}</div>{% endif %} {% if form.locked %}<input type="hidden" name="offeringId" value="{{ form.offering_id }}" />{% endif %}<label>Service {% if form.locked %}<input class="input input-bordered"
          value="{{ form.offering.name|default:form.offering_id }}"
          disabled />{% else %}<select name="offeringId"
           class="select select-bordered"
