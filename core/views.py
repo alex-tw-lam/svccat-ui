@@ -16,7 +16,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
-from core import kube, memory
+from core import kube, memory, platform
 from core.input_schema import (
     bind_schema_for,
     drawer_contract,
@@ -73,6 +73,8 @@ def _offerings(tenant):
     # kube mode shows the cluster catalog as-is: an empty or unreadable
     # catalog is an honest empty marketplace, never the dev mock — mock data
     # must not leak into a real deployment
+    if platform.PLATFORM_URL:
+        return _safe(platform.offerings, tenant)
     if not kube.kube:
         return memory.STATIC_CATALOG
     return catalog_from_crs(
@@ -86,6 +88,8 @@ def _offerings(tenant):
 
 
 def _bindings(tenant):
+    if platform.PLATFORM_URL:
+        return _safe(platform.bindings, tenant)
     return (
         memory.list_bindings(tenant)
         if not kube.kube
@@ -105,7 +109,9 @@ def _instances(tenant):
             "bindingCount": sum(b["instanceId"] == r["id"] for b in binds),
         }
         for r in (
-            memory.list_instances(tenant)
+            _safe(platform.instances, tenant)
+            if platform.PLATFORM_URL
+            else memory.list_instances(tenant)
             if not kube.kube
             else [instance_record(r) for r in kube.list_instances(tenant)]
         )
@@ -115,7 +121,7 @@ def _instances(tenant):
 def _events(tenant, kind, name=None):
     try:
         evs = sorted(
-            memory.events(tenant, kind, name)
+            [] if platform.PLATFORM_URL else memory.events(tenant, kind, name)
             if not kube.kube
             else [
                 e
@@ -818,8 +824,11 @@ def provision_post(request):
             )
         params = _form_params(body, "Instance")
         checked = _checked(validate_user_params(offering_id, params))
-        slug = kube.instance_slug(name)
-        if kube.kube:
+        if platform.PLATFORM_URL:
+            platform.create_instance(tenant, name, offering_id, plan_id, checked)
+            redirect_id = name
+        elif kube.kube:
+            slug = kube.instance_slug(name)
             kube.ensure_namespace(tenant)
             refs = kube.resolve_namespaced_refs(tenant, offering_id, plan_id)
             if not refs:
@@ -847,6 +856,7 @@ def provision_post(request):
             )
         else:
             memory.create_instance(tenant, str(name).strip(), offering_id, plan_id)
+            redirect_id = name
     except Exception as err:
         return _provision_page(
             request,
@@ -862,7 +872,10 @@ def provision_post(request):
             locked=bool(offering_id),
             status=400,
         )  # provision repaints every error with its message; instance_edit re-raises non-400s as visible 500s (§10)
-    redirect_id = slug["id"] if kube.kube else str(name).strip()
+    if platform.PLATFORM_URL:
+        pass  # redirect_id was set in the platform branch above
+    else:
+        redirect_id = slug["id"] if kube.kube else str(name).strip()
     return redirect(f"/instances/show/{redirect_id}?tenant={tenant}")
 
 
@@ -963,7 +976,9 @@ def instance_edit_post(request, inst_id):
         }
         params = _form_params(body, "Instance")
         checked = _checked(validate_user_params(inst["offeringId"], params))
-        if kube.kube:
+        if platform.PLATFORM_URL:
+            platform.update_instance(tenant, inst_id, body.get("planId"), checked)
+        elif kube.kube:
             kube.update_instance(tenant, inst_id, body.get("planId"), checked)
         else:
             inst.update(planId=str(body.get("planId") or inst["planId"]))
@@ -999,7 +1014,9 @@ def instance_delete(request, inst_id):
     # the redirect carries the notification banner
     tenant = request.tenant
     if _find_instance(tenant, inst_id):
-        if kube.kube:
+        if platform.PLATFORM_URL:
+            platform.delete_instance(tenant, inst_id)
+        elif kube.kube:
             kube.delete_instance(tenant, inst_id)
         else:
             memory.delete_instance(tenant, inst_id)
@@ -1044,6 +1061,22 @@ def binding_credentials(request, binding_id):
     def _creds_err(message):
         return render(request, "core/credentials.html", {"message": message})
 
+    if platform.PLATFORM_URL:
+        try:
+            creds = platform.read_credentials(tenant, binding_id)
+            return render(
+                request,
+                "core/credentials.html",
+                {
+                    "creds": sorted(creds.items()),
+                    "creds_json": json.dumps(creds, indent=2),
+                    "name": b["name"],
+                    "secret_name": b.get("secretName", ""),
+                    "tenant": tenant,
+                },
+            )
+        except Exception as err:
+            return _creds_err(f"credentials could not be read: {err}")
     if not kube.kube:
         return _creds_err("credentials need the cluster (not available in memory mode)")
     if not (b := _find_binding(request.tenant, binding_id)):
@@ -1082,7 +1115,9 @@ def binding_delete(request, binding_id):
     tenant = request.tenant
     b = _find_binding(tenant, binding_id)
     if b:
-        if kube.kube:
+        if platform.PLATFORM_URL:
+            platform.delete_binding(tenant, binding_id)
+        elif kube.kube:
             kube.delete_binding(tenant, binding_id)
         else:
             memory.delete_binding(tenant, binding_id)
