@@ -26,19 +26,28 @@ The gitignored vendored assets under `core/public/` and the collected `staticfil
 
 1. **Identity** — OIDC Authorization Code + PKCE (S256), server-side against Keycloak; browser never sees a token;
    session = httpOnly signed cookie `sm_session`, 12 h, SameSite=Lax. Local admin login: `ADMIN_USER`/`ADMIN_PASSWORD`
-   env (constant-time compare; failures log username + client address). The sign-in page always shows the Keycloak
-   button; admin form only when the password env is set; signed-in visitors are redirected off the sign-in page.
+   env (constant-time compare; failures log username + client address). The sign-in page shows the Keycloak
+   button only when a real issuer is configured (a button that fails 100% of the time is worse than none); admin
+   form only when the password env is set; signed-in visitors are redirected off the sign-in page.
 2. **Tenancy** — allowed tenant namespaces derived from token groups, filtered by `ALLOWED_TENANTS`; `FALLBACK_TENANTS`
    (explicit config, default none — fail closed) when the token yields none; the local admin sees every active
    namespace. The namespace switcher keeps the current path and query params.
 3. **Catalog** — cluster + namespaced service classes browsable as a marketplace tile grid; a tile
    goes straight to that offering's provision form (plan choice happens there; no catalog-detail page).
-4. **Provisioning** — provision form with service/plan select, instance name, and an advanced drawer
-   for raw-JSON parameters with live validation; change plan (edit); delete with confirm + deprovision.
+4. **Provisioning** — provision form with service/plan select, instance name (auto-generated when left
+   blank), typed form fields for user parameters rendered from the offering schema (select for enum,
+   number input, text input), and a raw-JSON escape hatch behind a toggle; quick provision from the
+   catalog tile (smallest plan, auto-name); change plan (edit); delete with typed-name confirm +
+   deprovision.
 5. **Instances** — per-namespace list with status badges, bindings count, latest event, 3 s poll while
-   in-flight; detail page with parameters, breadcrumbs, an events timeline (newest first, capped at 20) and a Manage link when the broker reports a dashboard_url.
-6. **Bindings** — created/revealed/deleted on the instance detail page (hierarchy: namespace → instance → binding);
-   credentials revealed by an explicit htmx swap, never preloaded, disabled until ready; no global bindings page.
+   in-flight; system namespaces (kube-*) never appear in the switcher; the last-used namespace is
+   remembered in the session; detail page with tabs (Overview / Bindings / Events), parameters,
+   breadcrumbs, the deepest Warning event surfaced as the failure message when status is failed, and
+   a Manage link when the broker reports a dashboard_url.
+6. **Bindings** — connected/revealed/deleted on the instance detail page (one-click Connect names the
+   binding after the instance; no bind form — the offering contract has zero bind user inputs);
+   credentials rendered as a key/value list with Copy as JSON/.env and the in-cluster secret surfaced;
+   revealed by an explicit htmx swap, never preloaded, disabled until ready; no global bindings page.
 7. **Backends** — Kubernetes backend (Service Catalog CRs; namespaces auto-created on first tenant touch together with
    the `service-manager-binding-secrets` RoleBinding; DNS-label slug names + `service-manager.io/*` display-name
    annotation) and an in-memory dev fallback (static catalog, per-tenant lists, async completion ~4 s, simulated events)
