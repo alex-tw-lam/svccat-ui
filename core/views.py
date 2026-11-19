@@ -8,12 +8,14 @@ import logging
 import os
 import re
 import secrets
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from urllib.parse import urlencode
+
 import requests
-from django.http import FileResponse, Http404, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
+
 from core import kube, memory
 from core.input_schema import (
     bind_schema_for,
@@ -291,7 +293,7 @@ def fmt_created(ts):
         dt = datetime.fromisoformat(str(ts))
     except ValueError:
         return str(ts)
-    dt = dt.astimezone(timezone.utc)
+    dt = dt.astimezone(UTC)
     return dt.strftime("%-m/%-d/%Y, %-I:%M:%S %p")
 
 
@@ -526,30 +528,6 @@ def auth_logout(request):
     )  # a local admin has no Keycloak session to end
 
 
-def _public_file(name, content_type):
-    if not os.path.isfile(path := os.path.join(PUBLIC_DIR, name)):
-        raise Http404(f"{name} is not vendored yet — see core/public/README.md")
-    resp = FileResponse(open(path, "rb"), content_type=content_type)
-    resp["Cache-Control"] = "no-cache"
-    return resp  # operator drops vendored assets in (core/public/README.md); first-party → always revalidate
-
-
-def asset(name, content_type):
-    return lambda request: _public_file(name, content_type)
-
-
-def daisyui_css(
-    request,
-):  # serve the precompressed .gz when the client accepts gzip (gunicorn has no compress layer)
-    gz = "gzip" in request.META.get("HTTP_ACCEPT_ENCODING", "") and os.path.isfile(
-        os.path.join(PUBLIC_DIR, "daisyui.css.gz")
-    )
-    resp = _public_file("daisyui.css.gz" if gz else "daisyui.css", "text/css")
-    if gz:
-        resp["Content-Encoding"], resp["Vary"] = "gzip", "Accept-Encoding"
-    return resp
-
-
 @require_GET
 def services(request):
     return _page(
@@ -737,7 +715,7 @@ def provision_form_fragment(request):
 def plan_fields_fragment(request):
     return (
         redirect("/instances/new")
-        if not request.headers.get("HX-Request")
+        if not request.htmx
         else render(
             request,
             "core/plan_fields.html",
@@ -947,7 +925,7 @@ def instance_edit_post(request, inst_id):
         )  # ValueError: namespaced plan not in tenant catalog
     except kube.ApiException as err:
         msg = _kube_err_message(err)
-        if err.status == 403 and re.search(r"in progress", msg, re.I):
+        if err.status == 403 and re.search(r"in progress", msg, re.IGNORECASE):
             return redirect(
                 f"/instances/show/{inst_id}?tenant={tenant}"
             )  # 403 in-progress = double-submit racing the accepted update → land on detail, it polls to convergence

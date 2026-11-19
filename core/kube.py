@@ -6,7 +6,9 @@ import hashlib
 import os
 import re
 from functools import partial
-from kubernetes import client as k8s_client, config as k8s_config
+
+from kubernetes import client as k8s_client
+from kubernetes import config as k8s_config
 from kubernetes.client.exceptions import ApiException
 
 GROUP, VERSION = "servicecatalog.k8s.io", "v1beta1"

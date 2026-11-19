@@ -3,6 +3,7 @@ spec shapes, pinned-params-last, plan ref surgery, and the error semantics
 views rely on. No cluster needed."""
 
 import unittest
+from datetime import UTC
 from unittest import mock
 
 from core import kube
@@ -142,10 +143,10 @@ class TestListEvents(KubeCase):
             self.last_timestamp, self.first_timestamp, self.event_time = lt, ft, et
 
     def test_timestamp_preference_and_iso(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         self.fake.results = [
-            SimpleNs(items=[self.E(lt=datetime(2026, 1, 1, tzinfo=timezone.utc))])
+            SimpleNs(items=[self.E(lt=datetime(2026, 1, 1, tzinfo=UTC))])
         ]
         out = kube.list_events("t1")
         self.assertEqual(out[0]["lastTimestamp"], "2026-01-01T00:00:00+00:00")

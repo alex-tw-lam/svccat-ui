@@ -20,7 +20,7 @@ Lines = every git-tracked file except `uv.lock` (generated):
 git ls-files | grep -vE '^uv\.lock$' | xargs wc -l | tail -1
 ```
 
-The gitignored vendored assets `core/public/htmx.min.js`, `alpine.min.js`, `daisyui.css`, `daisyui.css.gz` never count.
+The gitignored vendored assets under `core/public/` and the collected `staticfiles/` directory never count.
 
 ## Product requirements (all must exist)
 
@@ -47,13 +47,15 @@ The gitignored vendored assets `core/public/htmx.min.js`, `alpine.min.js`, `dais
    (server re-checks everything the client allows); form-schema modal viewer; free-input filtering.
 9. **Design system** — DaisyUI 4 prebuilt + the app.css overlay; no node toolchain, no build step, no SPA; WCAG AA
    badge/muted contrast; single 720 px breakpoint. `docs/design.md` is descriptive; templates are the source of truth.
-10. **Serving** — no database; the app serves `/app.js`, `/app.css` and the vendored slots itself (clean 404 for absent
-    vendored files; `.gz` variant honored with `Content-Encoding: gzip`); `Cache-Control: no-store` on pages; visible
+10. **Serving** — no database; WhiteNoise serves the first-party and vendored assets at `/s/` (clean 404 for absent
+    vendored files; `.gz` variants precompressed by `collectstatic` and served with `Content-Encoding: gzip`);
+    `Cache-Control: no-store` on pages; visible
     500s; trusts `X-Forwarded-Proto`; `ALLOWED_HOSTS = *`; no CSRF layer (mutations are session-gated server-side).
 11. **Config** — every variable in README's Configuration table is read with the documented meaning
     and default: `SESSION_SECRET`, `EXTERNAL_URL`, `KC_URL`, `KC_REALM`, `KC_CLIENT_ID`,
     `ADMIN_USER`, `ADMIN_PASSWORD`, `KUBERNETES_SERVICE_HOST`, `KUBE_IN_CLUSTER`, `POD_NAMESPACE`,
     `CLUSTER_NAME`, `ALLOWED_TENANTS`, `FALLBACK_TENANTS`.
-12. **Runs** — `uv sync` then `manage.py runserver` boots with the memory backend; with the quickstart
-    env (`ADMIN_PASSWORD` + `ALLOWED_TENANTS`) the UI is fully browsable; `manage.py check` passes on
-    a fresh clone (vendored assets absent); the Docker image runs gunicorn on :8080.
+12. **Runs** — `uv sync` then `manage.py runserver` boots with the memory backend; after dropping in vendored
+    assets, `manage.py collectstatic --noinput` publishes them; with the quickstart env (`ADMIN_PASSWORD` +
+    `ALLOWED_TENANTS`) the UI is fully browsable; `manage.py check` passes on a fresh clone (vendored assets
+    absent); the Docker image runs gunicorn on :8080.

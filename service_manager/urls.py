@@ -1,4 +1,7 @@
-from django.urls import path
+import os
+
+from django.urls import include, path
+
 from core import views
 
 urlpatterns = [
@@ -10,13 +13,6 @@ urlpatterns = [
     path("auth/local", views.auth_local),
     path("auth/callback", views.auth_callback),
     path("auth/logout", views.auth_logout),
-    # static assets (vendored files — not worth the static machinery):
-    # htmx + Alpine + app.js + the prebuilt DaisyUI css (zero build step)
-    path("htmx.min.js", views.asset("htmx.min.js", "application/javascript")),
-    path("alpine.min.js", views.asset("alpine.min.js", "application/javascript")),
-    path("app.js", views.asset("app.js", "application/javascript")),
-    path("app.css", views.asset("app.css", "text/css")),
-    path("daisyui.css", views.daisyui_css),
     # service offerings picker (behind "Add Service Instance"); picking an
     # offering goes straight to its provision form
     path("services", views.services),
@@ -36,3 +32,10 @@ urlpatterns = [
     path("bindings/<str:binding_id>/credentials", views.binding_credentials),
     path("bindings/delete/<str:binding_id>", views.binding_delete),
 ]
+
+# debug toolbar panels, dev only (DJANGO_DEBUG=1; the package is a dev
+# dependency, so it is absent from the production image)
+if os.environ.get("DJANGO_DEBUG") == "1":
+    import debug_toolbar  # noqa: F401 (import probe doubles as the gate)
+
+    urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]

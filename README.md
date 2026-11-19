@@ -10,7 +10,8 @@ templates + **htmx** fragment swaps + **Alpine.js** sprinkles + **DaisyUI** (ven
 
 ```sh
 uv sync  # creates .venv from the committed uv.lock
-# Drop in vendored assets (core/public/README.md), then run; tenancy fails closed: use admin form + explicit tenants:
+# Drop in vendored assets (core/public/README.md), publish them, then run; tenancy fails closed: use admin form + explicit tenants:
+uv run python manage.py collectstatic --noinput
 ADMIN_PASSWORD=dev ALLOWED_TENANTS=team-a,team-b uv run python manage.py runserver 8000
 ```
 

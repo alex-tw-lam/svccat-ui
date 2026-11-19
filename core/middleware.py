@@ -2,8 +2,10 @@
 
 import logging
 import traceback
+
 from django.http import Http404
 from django.shortcuts import redirect
+
 from core import kube
 
 logger = logging.getLogger(__name__)
@@ -20,15 +22,8 @@ class TenantMiddleware:
             )  # never show the sign-in page to a signed-in visitor
         if not any(
             request.path == p or request.path.startswith(p)
-            for p in (
-                "/auth/",
-                "/htmx.min.js",
-                "/alpine.min.js",
-                "/app.js",
-                "/app.css",
-                "/daisyui.css",
-            )
-        ):  # paths that never require a session: login round-trip + the vendored assets
+            for p in ("/auth/", "/s/")
+        ):  # paths that never require a session: login round-trip + the static prefix (a missing vendored file must fall through to a clean 404, not a login redirect)
             if not (session := request.session).get("sub"):
                 return redirect("/auth/login")
             tenants = (

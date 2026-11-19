@@ -1,6 +1,6 @@
 """In-memory dev fallback (outside the cluster): static catalog + per-tenant instance/binding lists, process-local (nothing survives a restart); simulates the broker's ~4s async completion so the dev UI exercises the real status flow."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from functools import partial
 
 _READY_AFTER = timedelta(seconds=4)
@@ -51,7 +51,7 @@ def _event(ns, kind, name, reason, message):
             "reason": reason,
             "type": "Normal",
             "message": message,
-            "lastTimestamp": datetime.now(timezone.utc).isoformat(),
+            "lastTimestamp": datetime.now(UTC).isoformat(),
         }
     )
     del _EVENTS[:-200]
@@ -74,7 +74,7 @@ def _table(kind, tenant):
 def _aged(rec, inflight, ns, kind):
     if (
         rec.get("status") == inflight
-        and datetime.now(timezone.utc) - datetime.fromisoformat(rec["createdAt"])
+        and datetime.now(UTC) - datetime.fromisoformat(rec["createdAt"])
         > _READY_AFTER
     ):
         rec["status"] = "ready"
@@ -108,7 +108,7 @@ def create_instance(t, name, offering_id, plan_id):
         "offeringId": offering_id,
         "planId": plan_id,
         "status": "provisioning",
-        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "createdAt": datetime.now(UTC).isoformat(),
         "message": "in-memory (server not running in cluster)",
     }
     _table("instances", t).append(rec)
@@ -147,7 +147,7 @@ def create_binding(t, name, instance_id):
         "instanceId": instance_id,
         "status": "creating",
         "secretName": f"binding-{name}",
-        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "createdAt": datetime.now(UTC).isoformat(),
     }
     _table("bindings", t).append(rec)
     _event(

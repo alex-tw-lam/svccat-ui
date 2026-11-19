@@ -5,9 +5,8 @@ round-trip shapes, and the gzip asset branch."""
 
 from django.test import Client
 
+from core import views
 from tests.base import MemoryCase
-
-import core.views as views
 
 
 class TestGate(MemoryCase):
@@ -112,15 +111,15 @@ class TestPageRenders(MemoryCase):
         gz = os.path.join(os.path.dirname(views.__file__), "public", "daisyui.css.gz")
         if not os.path.isfile(gz):
             self.skipTest("daisyui.css.gz not vendored")
-        resp = self.client.get("/daisyui.css", HTTP_ACCEPT_ENCODING="gzip")
+        resp = self.client.get("/s/daisyui.css", HTTP_ACCEPT_ENCODING="gzip")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Encoding"], "gzip")
 
     def test_missing_vendored_asset_is_clean_404(self):
-        from django.http import Http404
-
-        with self.assertRaises(Http404):
-            views._public_file("nope.css", "text/css")
+        # a missing static file must fall through WhiteNoise to a plain 404 —
+        # never the login redirect (the /s/ prefix is session-exempt)
+        resp = self.client.get("/s/nope.css")
+        self.assertEqual(resp.status_code, 404)
 
 
 class TestOidc(MemoryCase):

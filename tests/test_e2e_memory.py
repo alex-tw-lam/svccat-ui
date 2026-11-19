@@ -139,8 +139,8 @@ class TestEditBindDelete(MemoryCase):
 class TestAssets(MemoryCase):
     def test_first_party_assets_served(self):
         for path_, marker in [
-            ("/app.js", b"smDrawer"),
-            ("/app.css", b"stack-tag"),
+            ("/s/app.js", b"smDrawer"),
+            ("/s/app.css", b"stack-tag"),
         ]:
             resp = self.client.get(path_)
             self.assertEqual(resp.status_code, 200, path_)

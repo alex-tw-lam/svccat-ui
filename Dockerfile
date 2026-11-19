@@ -11,7 +11,9 @@ RUN uv sync --frozen --no-dev
 COPY manage.py ./
 COPY service_manager ./service_manager
 COPY core ./core
-# Vendored assets (htmx.min.js, alpine.min.js, daisyui.css[.gz]) are not in the repo; bake them in at build time via a BuildKit bind (docker build --build-context assets=./assets .):
-# COPY --from=assets htmx.min.js alpine.min.js daisyui.css daisyui.css.gz core/public/
+# Vendored assets (htmx.min.js, alpine.min.js, daisyui.css, plugin/ext files) are not in the repo; bake them in at build time via a BuildKit bind (docker build --build-context assets=./assets .):
+# COPY --from=assets htmx.min.js alpine.min.js htmx-preload.min.js alpine-collapse.min.js alpine-focus.min.js daisyui.css core/public/
+# collectstatic: WhiteNoise serves /s/* and precompresses the .gz variants here
+RUN python manage.py collectstatic --noinput
 EXPOSE 8080
 CMD ["sh", "-c", "gunicorn service_manager.wsgi:application --bind 0.0.0.0:${PORT} --workers 2 --access-logfile -"]

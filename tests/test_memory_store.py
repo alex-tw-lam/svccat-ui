@@ -2,7 +2,7 @@
 delete, per-tenant isolation and the 200-event retention cap."""
 
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from core import memory
 
@@ -19,7 +19,7 @@ class TestLifecycle(unittest.TestCase):
         # force the clock past the 4s window
         rec = memory._MEM["instances"]["t1"][0]
         rec["createdAt"] = (
-            datetime.now(timezone.utc) - memory._READY_AFTER - timedelta(seconds=1)
+            datetime.now(UTC) - memory._READY_AFTER - timedelta(seconds=1)
         ).isoformat()
         self.assertEqual(memory.list_instances("t1")[0]["status"], "ready")
 

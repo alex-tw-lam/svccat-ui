@@ -4,8 +4,7 @@ import os
 import unittest
 from unittest import mock
 
-from core import views
-from core import kube
+from core import kube, views
 
 
 def instance_cr(status=None, reason=None, conditions=(), deleting=False):
