@@ -99,11 +99,11 @@ class TestPageRenders(MemoryCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b"instance-detail", resp.content)
 
-    def test_bind_form_get(self):
+    def test_connect_reaches_the_form_free_flow(self):
         self.provision()
-        resp = self.client.get("/bindings/new?tenant=team-a&instance=pg")
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"free bind inputs", resp.content)
+        resp = self.client.post("/bindings/connect/pg?tenant=team-a")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("#bindings", resp["Location"])
 
     def test_gzip_variant_of_daisyui(self):
         import os

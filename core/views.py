@@ -978,118 +978,37 @@ def instance_delete(request, inst_id):
     return redirect(f"/instances?tenant={tenant}&flash=deletion-started")
 
 
-def _bind_form_ctx(insts, preset, error="", values=None):
-    values = values or {}
-    selected_id = (
-        values.get("instanceId") or preset or (insts[0]["id"] if insts else "")
-    )
-    selected = next((i for i in insts if i["id"] == selected_id), None)
-    form, bind = (
-        (
-            form_schema_for(selected["offeringId"], "bind"),
-            bind_schema_for(selected["offeringId"]),
-        )
-        if selected
-        else (None, None)
-    )
-    free = form["editable"] if form else []
-    computed = [f["name"] for f in (bind or {}).get("computedInputs", [])]
-    hint = f"free bind inputs: {', '.join(free) or 'none'}" + (
-        f" (computed bind inputs projected from the instance: {', '.join(computed)})"
-        if computed
-        else ""
-    )
-    return {
-        "insts": insts,
-        "selected_id": selected_id,
-        "error": error,
-        "values": values,
-        "bind_hint": hint,
-        "contract_json": _contract_json(
-            selected["offeringId"] if selected else None, "bind"
-        ),
-    }
-
-
-def _bind_page(request, tenant, preset, error="", values=None, status=200):
-    insts = _instances(tenant)
-    p = next((i for i in insts if i["id"] == preset), None)
-    crumbs = (
-        _crumbs(tenant)
-        + (
-            [{"label": p["name"], "href": f"/instances/show/{preset}?tenant={tenant}"}]
-            if p
-            else []
-        )
-        + [{"label": "Create binding", "href": None}]
-    )
-    return _page(
-        request,
-        "Create binding",
-        "core/bind_page.html",
-        "form",
-        _bind_form_ctx(insts, preset, error, values),
-        crumbs,
-        status,
-    )
-
-
-@require_GET
-def bind_new(request):
-    return _bind_page(request, request.tenant, request.GET.get("instance"))
-
-
-@require_GET
-def bind_freeinputs(request):
-    # instance-select change fragment: re-renders the hint + validation
-    # contract from the selected instance's offering
-    return render(
-        request,
-        "core/bind_freeinputs.html",
-        _bind_form_ctx(
-            _instances(request.tenant),
-            request.GET.get("instanceId") or "",
-        ),
-    )
-
-
-def bind_post(request):
+def bind_connect(request, inst_id):
+    # one-click binding: no name to invent (every offering has zero bind user
+    # inputs, so the old form's only field was a name for an object with
+    # exactly one relationship) — the instance display name becomes the
+    # binding name, disambiguated when taken
     tenant = request.tenant
-    body = request.POST
-    name, instance_id = (body.get(k, "") for k in ("name", "instanceId"))
+    if not (inst := _find_instance(tenant, inst_id)):
+        return _error_page(request, 404, "instances", "instance not found")
+    if inst["status"] != "ready":
+        return redirect(f"/instances/show/{inst_id}?tenant={tenant}#bindings")
+    taken = {b["name"] for b in _bindings(tenant)}
+    base = inst["name"] or inst["id"]
+    name = next(cand for n in range(1, 99) for cand in [base if n == 1 else f"{base}-{n}"] if cand not in taken)
     try:
-        if not name or not instance_id:
-            raise FormError("name and instance are required")
-        params = _form_params(body, "Binding")
-        inst = _find_instance(tenant, instance_id)
-        if not inst:
-            raise FormError("instance not found — pick one from the list")
-        checked = _checked(validate_bind_params(inst["offeringId"], params))
-        slug = kube.binding_slug(name)
         if kube.kube:
             kube.ensure_namespace(tenant)
-            kube.create_binding(
-                tenant, slug["id"], instance_id, slug["displayName"], checked or {}
-            )
+            slug = kube.binding_slug(name)
+            kube.create_binding(tenant, slug["id"], inst_id, slug["displayName"], {})
         else:
-            memory.create_binding(tenant, str(name).strip(), instance_id)
+            memory.create_binding(tenant, name, inst_id)
     except Exception as err:
-        return _bind_page(
+        return _error_page(
             request,
-            tenant,
-            str(instance_id or ""),
-            str(err) if isinstance(err, FormError) else _kube_err_message(err),
-            {
-                "name": str(name or ""),
-                "instanceId": str(instance_id or ""),
-                "parameters": (body.get("parameters") or "").strip(),
-            },
-            status=400,
+            502,
+            "instances",
+            f"binding could not be created — {err}",
         )
-    return redirect(f"/instances/show/{instance_id}?tenant={tenant}#bindings")
+    return redirect(f"/instances/show/{inst_id}?tenant={tenant}#bindings")
 
 
-bind_dispatch = _dispatch(bind_new, bind_post)
+bind_connect = require_POST(bind_connect)
 
 
 @require_GET

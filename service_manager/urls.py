@@ -28,9 +28,8 @@ urlpatterns = [
     path("instances/show/<str:inst_id>", views.instance_show),
     path("instances/edit/<str:inst_id>", views.instance_edit_dispatch),
     path("instances/delete/<str:inst_id>", views.instance_delete),
-    # bindings (created and managed inline on an instance's page)
-    path("bindings/new/freeinputs", views.bind_freeinputs),
-    path("bindings/new", views.bind_dispatch),
+    # bindings (connected/revealed/deleted inline on an instance's page)
+    path("bindings/connect/<str:inst_id>", views.bind_connect),
     path("bindings/<str:binding_id>/credentials", views.binding_credentials),
     path("bindings/delete/<str:binding_id>", views.binding_delete),
 ]
